@@ -1,0 +1,12 @@
+﻿@page "/admin/users"
+@model zinfandel_movie_club.Pages.Admin.Users.Index
+
+<div>
+    <h1>Users List Page</h1>
+    
+    <h2>My Claims</h2>
+    @foreach(var claims in User.Claims)
+    {
+        <p>@claims.Type: @claims.Value</p>
+    }
+</div>

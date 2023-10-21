@@ -1,6 +1,10 @@
-using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using zinfandel_movie_club.Data;
+using zinfandel_movie_club.Authentication;
+using zinfandel_movie_club.Config;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,33 +13,33 @@ builder.Services.AddMicrosoftIdentityWebAppAuthentication(builder.Configuration,
 builder.Services
     .AddRazorPages(options =>
     {
-        options.Conventions.AuthorizePage("/index", policy: "Admin");
+        options.Conventions.AuthorizePage("/Privacy", policy: "Admin");
+        options.Conventions.AuthorizeFolder("/Admin", policy: "Admin");
     })
     .AddMicrosoftIdentityUI();
 
+builder.Services.AddSingleton<IAuthorizationHandler, AdminAuthorizationPolicy>();
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Admin", policy =>
     {
-        var superUserId = builder.Configuration.GetSection("Superuser").GetValue<string>("ObjectId");
-
-        policy.RequireAssertion(ctx =>
-        {
-            var user = ctx.User;
-            return
-                user.HasClaim(c =>
-                    !string.IsNullOrWhiteSpace(superUserId) &&
-                    c.Type == ClaimTypes.NameIdentifier &&
-                    string.Equals(c.Value, superUserId, StringComparison.InvariantCultureIgnoreCase))
-                || user.HasClaim(c => c.Type == "Role" && c.Value == "Admin");
-        });
-    });
-
-    options.AddPolicy("Member", policy =>
-    {
-        policy.RequireClaim("Role", new string[] { "Member", "Admin" });
+        policy.AddRequirements(new IAuthorizationRequirement[] { new AdminAuthorizationRequirement() });
     });
 });
+
+builder.Services.Configure<GraphApi>(builder.Configuration.GetSection("GraphApi"));
+builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
+builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("Database"));
+builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<DatabaseConfig>>().Value.Cosmos);
+
+builder.Services.AddSingleton<IUserProfileDatabase, UserProfileDatabase>();
+builder.Services.AddSingleton<IGraphUserManager, GraphUserManager>();
+
+builder.Services.AddSingleton<IUserManager, UserManager>();
+builder.Services.AddMemoryCache();
+builder.Services.AddTransient<ClaimRoleDecoratorMiddleware>();
+
+
 
 var app = builder.Build();
 
@@ -52,12 +56,14 @@ else
 }
 
 app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 
 app.UseRouting();
 
 app.UseAuthorization();
+app.UseMiddleware<ClaimRoleDecoratorMiddleware>();
 
 app.MapRazorPages();
-app.MapControllers();
+app.MapControllers(); // remove when we replace the Identity.Web.UI default account controller
 app.Run();
