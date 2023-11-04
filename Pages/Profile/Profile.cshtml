@@ -1,0 +1,22 @@
+﻿@page "/profile/{id=_self}"
+@model zinfandel_movie_club.Pages.Profile.Profile
+
+<div>
+    <h1>User Profile</h1>
+    
+    @if (Model.CanEdit)
+    {
+        <form method="post">
+            <div>Display Name:
+                <input type="text" name="displayName" maxlength="100" width="50" value="@Model.DisplayName"></input>
+            </div>
+            <div><input type="submit" value="Save"></input></div>
+        </form>        
+    }
+    else
+    {
+        <div>Display Name: @Model.DisplayName </div>
+    }
+    
+    <div>Role: @Model.MemberRole</div>
+</div>
