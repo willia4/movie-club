@@ -1,0 +1,82 @@
+﻿name: Publish Site
+on:
+  push:
+    branches:
+      - 'main'
+  workflow_dispatch:
+
+jobs:
+  Publish-Site:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/zinfandel_movie_club:latest
+
+      - name: Install SSH Key And Test Connection
+        run: |
+          mkdir -p ~/.ssh/
+          install -m 600 -D /dev/null ~/.ssh/id
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id
+          
+          SSH_HOST_PUBLIC_KEY=$(ssh-keyscan -t ed25519 v4.electriclemur.com 2> /dev/null)
+          echo "$SSH_HOST_PUBLIC_KEY" >> ~/.ssh/known_hosts
+
+          SSH_HOST_PUBLIC_KEY=$(echo "$SSH_HOST_PUBLIC_KEY" | sed 's/^[a-z0-9\.]* //g')
+          echo "{SSH_HOST_PUBLIC_KEY}={${SSH_HOST_PUBLIC_KEY}}" >> $GITHUB_ENV
+
+          SSH_HOST=$(ssh root@v4.electriclemur.com -i ~/.ssh/id "hostname")
+          test "$SSH_HOST" = "lemur-web01"
+
+      - name: Restart container
+        run: |
+          ssh root@v4.electriclemur.com -i ~/.ssh/id "docker rm -f movieclub 2> /dev/null 1> /dev/null"
+
+          CMD=""
+          CMD+="docker run --pull always -d --name movieclub --restart=always "
+          CMD+="-e 'AZUREADB2C__SIGNEDOUTCALLBACKPATH=$AB2C_SIGNEDOUTCALLBACKPATH' "
+          CMD+="-e 'AZUREADB2C__SIGNUPSIGNINPOLICYID=$AB2C_SIGNUPSIGNINPOLICYID' "
+          CMD+="-e 'AZUREADB2C__RESETPASSWORDPOLICYID=$AB2C_RESETPASSWORDPOLICYID' "
+          CMD+="-e 'AZUREADB2C__EDITPROFILEPOLICYID=$AB2C_EDITPROFILEPOLICYID' "
+          
+          CMD+="-e 'APPSETTINGS__ENVIRONMENTID=$ENVIRONMENTID' "
+          CMD+="-e 'APPSETTINGS__SUPERUSERIDS__0=${{ secrets.JAMESWILL_ID }}' "
+          
+          CMD+="-e 'GRAPHAPI__CLIENTID=${{ secrets.GRAPH_CLIENTID }}' "
+          CMD+="-e 'GRAPHAPI__CLIENTSECRET=${{ secrets.GRAPH_CLIENTSECRET }}' "
+          CMD+="-e 'GRAPHAPI__TENANTID=${{ secrets.GRAPH_TENANTID }}' "
+          
+          CMD+="-e 'DATABASE__COSMOS__CONNECTIONSTRING=${{ secrets.COSMOS_CONNECTIONSTRING }}' "
+          CMD+="-e 'DATABASE__COSMOS__DATABASE=${{ secrets.COSMOS_DATABASE }}' "
+          CMD+="-e 'DATABASE__COSMOS__CONTAINER=${{ secrets.COSMOS_CONTAINER }}' "
+          
+          CMD+="--label 'traefik.enable=true' "
+          CMD+="--label 'traefik.http.routers.jw_index.entrypoints=websecure' "
+          CMD+="--label 'traefik.http.routers.jw_index.rule=Host(\`sophisticated-cinema.club\`)' "
+          CMD+="--label 'traefik.http.routers.jw_index.tls=true' "
+          CMD+="--label 'traefik.http.routers.jw_index.tls.certresolver=le' "
+
+          CMD+="--label 'traefik.http.routers.jw_index_redirect.entrypoints=web' "
+          CMD+="--label 'traefik.http.routers.jw_index_redirect.rule=Host(\`sophisticated-cinema.club\`)' "
+          CMD+="--label 'traefik.http.routers.jw_index_redirect.middlewares=movie_club_redirect' "
+          CMD+="--label 'traefik.http.middlewares.movie_club_redirect.redirectscheme.scheme=https' "
+
+          CMD+="willia4/zinfandel_movie_club:latest "
+
+          ssh root@v4.electriclemur.com -i ~/.ssh/id "$CMD"
