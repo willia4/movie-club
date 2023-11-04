@@ -67,14 +67,14 @@ jobs:
           CMD+="-e 'DATABASE__COSMOS__CONTAINER=${{ secrets.COSMOS_CONTAINER }}' "
           
           CMD+="--label 'traefik.enable=true' "
-          CMD+="--label 'traefik.http.routers.jw_index.entrypoints=websecure' "
-          CMD+="--label 'traefik.http.routers.jw_index.rule=Host(\`sophisticated-cinema.club\`)' "
-          CMD+="--label 'traefik.http.routers.jw_index.tls=true' "
-          CMD+="--label 'traefik.http.routers.jw_index.tls.certresolver=le' "
+          CMD+="--label 'traefik.http.routers.movie_club_index.entrypoints=websecure' "
+          CMD+="--label 'traefik.http.routers.movie_club_index.rule=Host(\`sophisticated-cinema.club\`)' "
+          CMD+="--label 'traefik.http.routers.movie_club_index.tls=true' "
+          CMD+="--label 'traefik.http.routers.movie_club_index.tls.certresolver=le' "
 
-          CMD+="--label 'traefik.http.routers.jw_index_redirect.entrypoints=web' "
-          CMD+="--label 'traefik.http.routers.jw_index_redirect.rule=Host(\`sophisticated-cinema.club\`)' "
-          CMD+="--label 'traefik.http.routers.jw_index_redirect.middlewares=movie_club_redirect' "
+          CMD+="--label 'traefik.http.routers.movie_club_index_redirect.entrypoints=web' "
+          CMD+="--label 'traefik.http.routers.movie_club_index_redirect.rule=Host(\`sophisticated-cinema.club\`)' "
+          CMD+="--label 'traefik.http.routers.movie_club_index_redirect.middlewares=movie_club_redirect' "
           CMD+="--label 'traefik.http.middlewares.movie_club_redirect.redirectscheme.scheme=https' "
 
           CMD+="willia4/zinfandel_movie_club:latest "
