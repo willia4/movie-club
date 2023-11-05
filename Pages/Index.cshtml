@@ -1,16 +1,33 @@
 ﻿@page
-@using System.Security.Claims
-@model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    Layout = null;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<html>
+<head>
+    <title>Sophisticated Movie Club - Coming Soon</title>
+    <link rel="stylesheet" href="~/zinfandel_movie_club.styles.css" asp-append-version="true" />
+</head>
+<body>
+<div class="main">
+    <h1>Coming Attractions</h1>
     
-    @foreach (var claim in User?.Claims ?? Enumerable.Empty<Claim>())
-    {
-        <p>@claim.Type: @claim.Value</p>  
-    }
+    <img src="~/img/drive-in.jpg"/>
 </div>
+</body>
+</html>
+@* @using System.Security.Claims *@
+@* @model IndexModel *@
+@* @{ *@
+@*     ViewData["Title"] = "Home page"; *@
+@* } *@
+@* *@
+@* <div class="text-center"> *@
+@*     <h1 class="display-4">Welcome</h1> *@
+@*     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p> *@
+@*      *@
+@*     @foreach (var claim in User?.Claims ?? Enumerable.Empty<Claim>()) *@
+@*     { *@
+@*         <p>@claim.Type: @claim.Value</p>   *@
+@*     } *@
+@* </div> *@
