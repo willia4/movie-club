@@ -63,8 +63,6 @@ else
     Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
 }
 
-app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 
 app.UseRouting();
