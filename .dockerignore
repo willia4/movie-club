@@ -6,3 +6,5 @@
 # files
 Dockerfile*
 **/*.md
+appsettings.Development.json
+Properties/launchSettings.json

@@ -1,7 +1,7 @@
 ﻿FROM mcr.microsoft.com/dotnet/sdk:7.0-bookworm-slim AS build
 
 WORKDIR /source
-COPY ./* .
+COPY ./ .
 
 RUN dotnet restore
 RUN dotnet publish -c release -o /app --no-restore
