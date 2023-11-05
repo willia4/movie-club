@@ -7,7 +7,7 @@ header nav {
 }
 
 div.logo-container {
-  margin-right: 15px;
+  margin-right: 30px;
 }
 
 div.logo-container.logo-with-page-name
@@ -46,11 +46,6 @@ div.logo-without-page-name .logo-link a
   font-size: 30px;
 }
 
-/*.navbar*/
-/*{*/
-/*  background-color: #302b28;*/
-/*}*/
-
 div.logo-with-page-name .page-name
 {
   font-size: 30px;
@@ -63,11 +58,8 @@ div.logo-with-page-name .page-name
   color: var(--alternate-bright-color);
 }
 
-/*.navbar-page-title {*/
-/*  font-size: 20px;*/
-/*  font-weight: bold;*/
-/*}*/
-
+/* Because of the way ASP.Net's isolated CSS plays with the <a> tag helper, we can't style the actual anchor tag here */
+/* custom_bootstrap.scss sets some variables which are used by the anchor tag as well */
 .nav-item {
-  color: red;
+  font-family: "blakely", sans-serif;
 }

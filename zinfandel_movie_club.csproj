@@ -64,6 +64,14 @@
     <_ContentIncludedByDefault Remove="wwwroot\lib\bootstrap\dist\js\bootstrap.min.js" />
     <_ContentIncludedByDefault Remove="wwwroot\lib\bootstrap\dist\js\bootstrap.min.js.map" />
     <_ContentIncludedByDefault Remove="wwwroot\lib\bootstrap\LICENSE" />
+    <_ContentIncludedByDefault Remove="vendor\bootstrap-5.3.2\.bundlewatch.config.json" />
+    <_ContentIncludedByDefault Remove="vendor\bootstrap-5.3.2\.cspell.json" />
+    <_ContentIncludedByDefault Remove="vendor\bootstrap-5.3.2\.eslintrc.json" />
+    <_ContentIncludedByDefault Remove="vendor\bootstrap-5.3.2\.stylelintrc.json" />
+    <_ContentIncludedByDefault Remove="vendor\bootstrap-5.3.2\composer.json" />
+    <_ContentIncludedByDefault Remove="vendor\bootstrap-5.3.2\package-lock.json" />
+    <_ContentIncludedByDefault Remove="vendor\bootstrap-5.3.2\package.json" />
+    <_ContentIncludedByDefault Remove="vendor\bootstrap-5.3.2\site\static\docs\5.3\assets\img\favicons\manifest.json" />
   </ItemGroup>
 
 </Project>

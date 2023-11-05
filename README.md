@@ -16,9 +16,11 @@ There is one caveat about the first-time run. See below.
 
 ### First-Time Run And Bootstrap
 
-To enable customizing Bootstrap, the entire library is stored in the `/vendor` directory. 
+To enable customizing Bootstrap, Bootstrap is pulled from npm and then rebuilt and copied into the wwwroot directory.  
 
-To build it and copy the appropriate files to `wwwroot`, you must use gulp which is part of the nodejs ecosystem. I apologize. This was the best I could do. 
+To customize Bootstrap, edit the `css_dev\custom_bootstrap.scss` file.
+
+To build this custom Bootstrap and copy the appropriate files to `wwwroot`, you must use gulp which is part of the nodejs ecosystem. I apologize. This was the best I could do. 
 
 ```
 npm install -g gulp-cli
