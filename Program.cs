@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
@@ -62,6 +63,16 @@ else
 {
     Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
 }
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions()
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedProto
+});
+
+app.UseCookiePolicy(new CookiePolicyOptions()
+{
+    Secure = CookieSecurePolicy.Always
+});
 
 app.UseStaticFiles();
 
