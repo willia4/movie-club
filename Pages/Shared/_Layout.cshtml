@@ -1,18 +1,45 @@
-﻿<!DOCTYPE html>
+﻿@using zinfandel_movie_club.Config
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@inject Branding branding
+
+@{
+    var pageTitle = (ViewData["Title"]?.ToString() ?? "").Trim();
+    var hasTitle = !string.IsNullOrWhiteSpace(pageTitle);
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - zinfandel_movie_club</title>
+    <title>@(hasTitle ? $"{pageTitle} - " : "") @branding.SiteName</title>
+    <link rel="stylesheet" href="https://use.typekit.net/bty8qbb.css">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/zinfandel_movie_club.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/zinfandel_movie_club.styles.css" asp-append-version="false" />
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">zinfandel_movie_club</a>
+                @if (hasTitle)
+                {
+                    <div class="logo-container logo-container-with-page-name d-sm-inline-flex justify-content-between">
+                        <div class="logo-link">
+                            <a href="/">@branding.SiteName</a>
+                        </div>
+                        <div class="page-name">@pageTitle</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="logo-container logo-container-only-logo d-sm-inline-flex justify-content-between">
+                        <div class="logo-link">
+                            <a href="/">@branding.SiteName</a>
+                        </div>
+                    </div>
+                }
+
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -44,7 +71,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2023 - zinfandel_movie_club - <a asp-area="" asp-page="/Privacy">Privacy</a>
+            &copy; 2023 - @branding.SiteName - <a asp-area="" asp-page="/Privacy">Privacy</a>
         </div>
     </footer>
 

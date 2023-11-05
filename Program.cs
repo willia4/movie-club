@@ -45,6 +45,8 @@ builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<DatabaseConfi
 builder.Services.AddSingleton<IUserProfileKeyValueStore, UserProfileKeyValueStore>();
 builder.Services.AddSingleton<IGraphUserManager, GraphUserManager>();
 
+builder.Services.AddSingleton<Branding>();
+
 builder.Services.AddMemoryCache();
 builder.Services.AddTransient<ClaimRoleDecoratorMiddleware>();
 

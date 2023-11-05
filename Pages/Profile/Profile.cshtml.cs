@@ -36,9 +36,11 @@ public class Profile : PageModel
     
     public void OnGet(string id)
     {
+        ViewData["Title"] = "User Profile";
+
         id = FixupPageId(id);
         CanEdit = UserCanEditPage(id);
-
+        
         MemberRole = User.UserRole();
         DisplayName = User.DisplayName();
     }

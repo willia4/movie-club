@@ -1,14 +1,61 @@
 ﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
 for details on configuring this project to bundle and minify static web assets. */
 
-a.navbar-brand {
+a {
+  color: #0077cc;
+}
+
+div.logo-container
+{
+  margin-right: 15px;
+}
+
+div.logo-container-with-page-name
+{
+  display: flex;
+  flex-direction: column;
+}
+
+div.logo-container-with-page-name .logo-link
+{
+  text-align: center;
+}
+
+div.logo-container .logo-link a
+{
   white-space: normal;
   text-align: center;
   word-break: break-all;
+
+  font-family: "blakely", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+
+  color: black;
+  margin: auto;
+  text-decoration: none;
 }
 
-a {
-  color: #0077cc;
+div.logo-container-with-page-name .logo-link a
+{
+  font-size: 20px;
+}
+
+div.logo-container-only-logo .logo-link a
+{
+  font-size: 30px;
+}
+
+div.logo-container-with-page-name .page-name
+{
+  font-size: 30px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.navbar-page-title {
+  font-size: 20px;
+  font-weight: bold;
 }
 
 .btn-primary {

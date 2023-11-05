@@ -19,4 +19,10 @@ html {
 
 body {
   margin-bottom: 60px;
+  background-color: #efefef;
+}
+
+label.form-label {
+  font-size: 140%;
+  font-weight: bold;
 }
