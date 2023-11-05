@@ -1,22 +1,22 @@
 ﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
 for details on configuring this project to bundle and minify static web assets. */
 
-a {
-  color: #0077cc;
+header nav {
+  background-color: var(--bright-background-color);
+  color: var(--dark-background-color);
 }
 
-div.logo-container
-{
+div.logo-container {
   margin-right: 15px;
 }
 
-div.logo-container-with-page-name
+div.logo-container.logo-with-page-name
 {
   display: flex;
   flex-direction: column;
 }
 
-div.logo-container-with-page-name .logo-link
+div.logo-with-page-name .logo-link
 {
   text-align: center;
 }
@@ -31,65 +31,43 @@ div.logo-container .logo-link a
   font-weight: 700;
   font-style: normal;
 
-  color: black;
+  color: var(--dark-background-color);
   margin: auto;
   text-decoration: none;
 }
 
-div.logo-container-with-page-name .logo-link a
+div.logo-with-page-name .logo-link a
 {
   font-size: 20px;
 }
 
-div.logo-container-only-logo .logo-link a
+div.logo-without-page-name .logo-link a
 {
   font-size: 30px;
 }
 
-div.logo-container-with-page-name .page-name
+/*.navbar*/
+/*{*/
+/*  background-color: #302b28;*/
+/*}*/
+
+div.logo-with-page-name .page-name
 {
   font-size: 30px;
   font-weight: bold;
   text-align: center;
+  
+  font-family: "doublebass", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  color: var(--alternate-bright-color);
 }
 
-.navbar-page-title {
-  font-size: 20px;
-  font-weight: bold;
-}
+/*.navbar-page-title {*/
+/*  font-size: 20px;*/
+/*  font-weight: bold;*/
+/*}*/
 
-.btn-primary {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
-}
-
-.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
-}
-
-.border-top {
-  border-top: 1px solid #e5e5e5;
-}
-.border-bottom {
-  border-bottom: 1px solid #e5e5e5;
-}
-
-.box-shadow {
-  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
-}
-
-button.accept-policy {
-  font-size: 1rem;
-  line-height: inherit;
-}
-
-.footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  white-space: nowrap;
-  line-height: 60px;
+.nav-item {
+  color: red;
 }

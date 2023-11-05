@@ -14,17 +14,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@(hasTitle ? $"{pageTitle} - " : "") @branding.SiteName</title>
     <link rel="stylesheet" href="https://use.typekit.net/bty8qbb.css">
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/zinfandel_movie_club.styles.css" asp-append-version="false" />
 </head>
+
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm  mb-3">
             <div class="container">
                 @if (hasTitle)
                 {
-                    <div class="logo-container logo-container-with-page-name d-sm-inline-flex justify-content-between">
+                    <div class="logo-container logo-with-page-name d-sm-inline-flex justify-content-between">
                         <div class="logo-link">
                             <a href="/">@branding.SiteName</a>
                         </div>
@@ -33,7 +34,7 @@
                 }
                 else
                 {
-                    <div class="logo-container logo-container-only-logo d-sm-inline-flex justify-content-between">
+                    <div class="logo-container logo-without-page-name d-sm-inline-flex justify-content-between">
                         <div class="logo-link">
                             <a href="/">@branding.SiteName</a>
                         </div>
@@ -47,15 +48,15 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-page="/Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
+                            <a class="nav-link" asp-area="" asp-page="/Privacy">Privacy</a>
                         </li>
                         @if (User?.Identity?.IsAuthenticated ?? false)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign Out</a>
+                                <a class="nav-link" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign Out</a>
                             </li>
                         }
                     </ul>
@@ -76,7 +77,7 @@
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
