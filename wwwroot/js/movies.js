@@ -2,7 +2,8 @@
     
     async function search() {
         const res = await fetch("/api/v1/search", {
-           method: "POST",
+           method: "POST", 
+           mode: "no-cors",
            body: JSON.stringify({
                
            }),
