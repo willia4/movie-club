@@ -129,16 +129,26 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// see https://helpx.adobe.com/fonts/using/content-security-policy.html for specifics around typekit
-const string csp = "default-src 'self'; " +
-                   "script-src 'self' p.typekit.net use.typekit.net; " +
-                   "style-src 'self' 'unsafe-inline' p.typekit.net use.typekit.net; " +
-                   "img-src 'self' p.typekit.net use.typekit.net; " +
-                   "font-src 'self' p.typekit.net use.typekit.net; " +
-                   "connect-src 'self' performance.typekit.net";
+var csp = new Lazy<string>(() =>
+{
+    var config = app.Services.GetRequiredService<IConfiguration>();
+    var section = config.GetSection("AzureAdB2C");
+    var instance = new Uri(section.GetValue<string>("Instance")!);
+    var domain = section.GetValue<string>("domain");
+    
+    // see https://helpx.adobe.com/fonts/using/content-security-policy.html for specifics around typekit
+    var csp = "default-src 'self'; " +
+                       "script-src 'self' p.typekit.net use.typekit.net; " +
+                       "style-src 'self' 'unsafe-inline' p.typekit.net use.typekit.net; " +
+                       "img-src 'self' p.typekit.net use.typekit.net; " +
+                       "font-src 'self' p.typekit.net use.typekit.net; " +
+                       $"connect-src 'self' performance.typekit.net {instance.Host} {domain}";
+    return csp;
+});
+
 app.Use(async (ctx, next) =>
 {
-    ctx.Response.Headers.Add("Content-Security-Policy", csp);
+    ctx.Response.Headers.Add("Content-Security-Policy", csp.Value);
     await next(ctx);
 });
 app.UseMiddleware<ClaimRoleDecoratorMiddleware>();
