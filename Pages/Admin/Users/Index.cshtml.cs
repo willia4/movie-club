@@ -49,7 +49,7 @@ public class Index : PageModel
         {
             string s when s == "set" => "foo",
             string s when s == "clear" => null,
-            _ => throw new BadHttpRequestException($"Invalid role action: {roleAction}")
+            _ => throw new Exceptions.BadRequestParameterException(nameof(roleAction), $"Invalid role action: {roleAction}")
         };
         
         await _userManager.SetUserRole(user, newRole, cancellationToken);

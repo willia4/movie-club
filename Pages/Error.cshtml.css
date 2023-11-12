@@ -1,0 +1,18 @@
+﻿p.error-text
+{
+    font-style: italic;
+    font-size: 115%;
+    margin-bottom: 75px;
+}
+
+p.stack-trace
+{
+    font-family: "Consolas", monospace;
+    line-height: 150%;
+    font-size: 85%;
+}
+
+div.properties
+{
+    margin-bottom: 75px;
+}

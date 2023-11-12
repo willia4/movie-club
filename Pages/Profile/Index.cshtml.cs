@@ -28,8 +28,8 @@ public class Index : PageModel
     private (bool wasSelf, string fixedId) FixupPageId(string id) =>
         id switch
         {
-            null => throw new BadHttpRequestException("Invalid route"),
-            string when string.IsNullOrWhiteSpace(id) => throw new BadHttpRequestException("Invalid route"),
+            null => throw new Exceptions.BadRequestException("Invalid route"),
+            string when string.IsNullOrWhiteSpace(id) => throw new Exceptions.BadRequestException("Invalid route"),
             "_self" => (true, User.NameIdentifier()),
             string => (false, id.Trim()) 
         };
@@ -51,7 +51,7 @@ public class Index : PageModel
         if (!UserCanEditPage(id)) return new UnauthorizedResult();
 
         displayName = displayName?.Trim() ?? "";
-        if (string.IsNullOrWhiteSpace(displayName)) return new BadRequestResult();
+        if (string.IsNullOrWhiteSpace(displayName)) throw new Exceptions.BadRequestParameterException(nameof(displayName), $"Display name is requried");
 
         if (displayName != User.DisplayName())
         {
