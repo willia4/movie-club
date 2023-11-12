@@ -38,6 +38,12 @@ builder.Services.AddAuthorization(options =>
     });
 });
 
+builder.Services.Configure<RouteOptions>(options =>
+{
+    options.LowercaseUrls = true;
+    options.AppendTrailingSlash = false;
+});
+
 builder.Services.Configure<GraphApi>(builder.Configuration.GetSection("GraphApi"));
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("Database"));
