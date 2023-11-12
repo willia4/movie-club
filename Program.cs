@@ -1,6 +1,9 @@
 using System.Collections.Immutable;
+using System.Net;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
@@ -38,6 +41,25 @@ builder.Services.AddAuthorization(options =>
     });
 });
 
+builder.Services.AddRateLimiter(limiterOptions =>
+{
+    limiterOptions.OnRejected = (ctx, ct) =>
+    {
+        ctx.HttpContext.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
+        return ValueTask.CompletedTask;
+    };
+
+    limiterOptions.AddTokenBucketLimiter(policyName: "api", options =>
+    {
+        options.TokenLimit = 50;
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 5;
+        options.ReplenishmentPeriod = TimeSpan.FromSeconds(20);
+        options.TokensPerPeriod = 15;
+        options.AutoReplenishment = true;
+    });
+});
+
 builder.Services.Configure<RouteOptions>(options =>
 {
     options.LowercaseUrls = true;
@@ -48,6 +70,7 @@ builder.Services.Configure<GraphApi>(builder.Configuration.GetSection("GraphApi"
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("Database"));
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<DatabaseConfig>>().Value.Cosmos);
+builder.Services.Configure<TMDBConfig>(builder.Configuration.GetSection("TheMovieDatabase"));
 
 builder.Services.AddSingleton<IUserProfileKeyValueStore, UserProfileKeyValueStore>();
 builder.Services.AddSingleton<IGraphUserManager, GraphUserManager>();
@@ -56,8 +79,9 @@ builder.Services.AddSingleton<Branding>();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddTransient<ClaimRoleDecoratorMiddleware>();
+builder.Services.AddScoped<IMovieDatabase, TheMovieDatabase>();
 
-
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 app.UseExceptionHandler("/error");
@@ -105,7 +129,20 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// see https://helpx.adobe.com/fonts/using/content-security-policy.html for specifics around typekit
+const string csp = "default-src 'self'; " +
+                   "script-src 'self' p.typekit.net use.typekit.net; " +
+                   "style-src 'self' 'unsafe-inline' p.typekit.net use.typekit.net; " +
+                   "img-src 'self' p.typekit.net use.typekit.net; " +
+                   "font-src 'self' p.typekit.net use.typekit.net; " +
+                   "connect-src 'self' performance.typekit.net";
+app.Use(async (ctx, next) =>
+{
+    ctx.Response.Headers.Add("Content-Security-Policy", csp);
+    await next(ctx);
+});
 app.UseMiddleware<ClaimRoleDecoratorMiddleware>();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapRazorPages();

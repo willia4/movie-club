@@ -70,6 +70,8 @@ jobs:
           CMD+="-e 'DATABASE__COSMOS__DATABASE=${{ secrets.COSMOS_DATABASE }}' "
           CMD+="-e 'DATABASE__COSMOS__CONTAINER=${{ secrets.COSMOS_CONTAINER }}' "
           
+          CMD+="-e 'THEMOVIEDATABASE__APITOKEN=${{ secrets.TMDB_TOKEN }}' "
+
           CMD+="--label 'traefik.enable=true' "
           CMD+="--label 'traefik.http.routers.movie_club_index.entrypoints=websecure' "
           CMD+="--label 'traefik.http.routers.movie_club_index.rule=Host(\`sophisticated-cinema.club\`)' "
