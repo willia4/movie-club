@@ -25,20 +25,20 @@ public class Index : PageModel
                 || string.Equals(User.NameIdentifier(), pageId, StringComparison.InvariantCultureIgnoreCase);
     }
 
-    private string FixupPageId(string id) =>
+    private (bool wasSelf, string fixedId) FixupPageId(string id) =>
         id switch
         {
             null => throw new BadHttpRequestException("Invalid route"),
             string when string.IsNullOrWhiteSpace(id) => throw new BadHttpRequestException("Invalid route"),
-            "_self" => User.NameIdentifier(),
-            string => id.Trim()
+            "_self" => (true, User.NameIdentifier()),
+            string => (false, id.Trim()) 
         };
     
     public void OnGet(string id)
     {
         ViewData["Title"] = "User Profile";
 
-        id = FixupPageId(id);
+        (var _, id) = FixupPageId(id);
         CanEdit = UserCanEditPage(id);
         
         MemberRole = User.UserRole();
@@ -47,7 +47,7 @@ public class Index : PageModel
 
     public async Task<IActionResult> OnPost(string id, [FromForm(Name = "displayName")] string displayName, CancellationToken cancellationToken)
     {
-        id = FixupPageId(id);
+        (var wasSelf, id) = FixupPageId(id);
         if (!UserCanEditPage(id)) return new UnauthorizedResult();
 
         displayName = displayName?.Trim() ?? "";
@@ -61,6 +61,6 @@ public class Index : PageModel
             await _graphUserManager.SetUserDisplayName(user, displayName, cancellationToken);
         }
         
-        return new RedirectToPageResult($"/Profile/{id}");
+        return new RedirectToPageResult($"Index", new { id = (wasSelf ? "" : id) });
     }
 }
