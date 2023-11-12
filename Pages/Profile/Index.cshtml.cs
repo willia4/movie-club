@@ -5,7 +5,7 @@ using zinfandel_movie_club.Data;
 
 namespace zinfandel_movie_club.Pages.Profile;
 
-public class Profile : PageModel
+public class Index : PageModel
 {
     private readonly IGraphUserManager _graphUserManager;
     
@@ -13,7 +13,7 @@ public class Profile : PageModel
     public string MemberRole = "";
     public string DisplayName = "";
 
-    public Profile(IGraphUserManager graphUserManager)
+    public Index(IGraphUserManager graphUserManager)
     {
         _graphUserManager = graphUserManager;
     }
