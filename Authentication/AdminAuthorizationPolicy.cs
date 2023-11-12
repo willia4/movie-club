@@ -19,11 +19,13 @@ public class AdminAuthorizationPolicy : AuthorizationHandler<AdminAuthorizationR
         
     }
 
-    protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, AdminAuthorizationRequirement requirement)
+    protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, AdminAuthorizationRequirement requirement)
     {
         if (context.User.IsAdmin())
         {
             context.Succeed(requirement);
         }
+
+        return Task.CompletedTask;
     }
 }

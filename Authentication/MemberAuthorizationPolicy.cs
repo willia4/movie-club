@@ -16,11 +16,13 @@ public class MemberAuthorizationPolicy : AuthorizationHandler<MemberAuthorizatio
 
     }
     
-    protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, MemberAuthorizationRequirement requirement)
+    protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, MemberAuthorizationRequirement requirement)
     {
         if (context.User.IsMember())
         {
             context.Succeed(requirement);
         }
+
+        return Task.CompletedTask;
     }
 }

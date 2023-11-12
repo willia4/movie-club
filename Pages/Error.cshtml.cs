@@ -11,8 +11,8 @@ public class ErrorModel : PageModel
 {
     public const string DefaultErrorMessage = "An internal error has occurred.";
 
-    public string ErrorTitle { get; set; }
-    public string ErrorText { get; set; }
+    public string ErrorTitle { get; set; } = "";
+    public string ErrorText { get; set; } = "";
     public Dictionary<string, string> ErrorProperties = new Dictionary<string, string>();
     
     public string? StackTrace { get; set; } = null;
@@ -62,7 +62,7 @@ public class ErrorModel : PageModel
                     .ToDictionary((p => p.Name), (p => p.GetValue(exception) switch
                     {
                         null => "[null]",
-                        object v => v.ToString()
+                        object v => v.ToString() ?? "[null string]"
                     }));
 
             if (_environment.IsDevelopment())
