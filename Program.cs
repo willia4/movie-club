@@ -23,6 +23,7 @@ builder.Services
         options.Conventions.AuthorizePage("/Privacy", policy: "Admin");
         options.Conventions.AuthorizeFolder("/Admin", policy: "Admin");
         options.Conventions.AuthorizeFolder("/Profile", policy: "Member");
+        options.Conventions.AuthorizeFolder("/Movies", policy: "Member");
     })
     .AddMicrosoftIdentityUI();
 
