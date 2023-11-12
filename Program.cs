@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Azure.Cosmos;
@@ -64,6 +65,23 @@ if (!app.Environment.IsDevelopment())
 else
 {
     Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
+
+    app.MapGet("/debug/routes", (IEnumerable<EndpointDataSource> endpointSources) =>
+        string.Join("\n", endpointSources
+            .SelectMany(src => src.Endpoints)
+            .Select(ep =>
+            {
+                var routeString = $"Unknown Route for {ep.GetType().Name}";
+                
+                if (ep is RouteEndpoint { RoutePattern: var rp } rep)
+                {
+                    var parameters = rp.Parameters.Select(p => p.Name).ToImmutableList();
+                    var parametersString = $"({string.Join(", ", parameters)})";
+                    routeString = $"{rp.RawText} - {parametersString}";
+                }
+
+                return $"{ep}: {routeString}";
+            })));
 }
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions()
@@ -84,5 +102,5 @@ app.UseMiddleware<ClaimRoleDecoratorMiddleware>();
 app.UseAuthorization();
 
 app.MapRazorPages();
-app.MapControllers(); // remove when we replace the Identity.Web.UI default account controller
+app.MapControllers(); // remove when we replace the Identity.Web.UI default account controller, if we haven't added controllers by then.
 app.Run();
