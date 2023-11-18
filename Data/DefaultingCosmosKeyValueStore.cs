@@ -27,9 +27,8 @@ public sealed class UserProfileKeyValueStore : DefaultingCosmosKeyValueStore<Use
             database: cosmosConfig.Database,
             container: cosmosConfig.Container,
             documentType: UserProfileData._DocumentType,
-            environmentId: appSettings.Value.EnvironmentId,
             partitionKeyMaker: id => new PartitionKey(id),
-            defaultDocumentGenerator: id => new UserProfileData { EnvironmentId = appSettings.Value.EnvironmentId, id = id, DisplayName = "", Role = "" })
+            defaultDocumentGenerator: id => new UserProfileData { id = id, DisplayName = "", Role = "" })
     {
         
     }
@@ -41,7 +40,6 @@ public class DefaultingCosmosKeyValueStore<DocumentT> : DefaultingKeyVaultStore<
     private readonly string _database;
     private readonly string _container;
     private readonly string _documentType;
-    private readonly string _environmentId;
     
     private readonly Func<string, PartitionKey> _partitionKeyMaker;
     private readonly Func<string, DocumentT> _defaultDocumentGenerator;
@@ -51,14 +49,13 @@ public class DefaultingCosmosKeyValueStore<DocumentT> : DefaultingKeyVaultStore<
 
     public bool WriteDefaultDocumentsBack { get; init; } = true;
     
-    public DefaultingCosmosKeyValueStore(string connectionString, string database, string container, string documentType, string environmentId, Func<string, PartitionKey> partitionKeyMaker, Func<string, DocumentT> defaultDocumentGenerator)
+    public DefaultingCosmosKeyValueStore(string connectionString, string database, string container, string documentType, Func<string, PartitionKey> partitionKeyMaker, Func<string, DocumentT> defaultDocumentGenerator)
     {
         _connectionString = connectionString;
         _database = database;
         _container = container;
 
         _documentType = documentType;
-        _environmentId = environmentId;
         
         _defaultDocumentGenerator = defaultDocumentGenerator;
         _partitionKeyMaker = partitionKeyMaker;
@@ -68,7 +65,7 @@ public class DefaultingCosmosKeyValueStore<DocumentT> : DefaultingKeyVaultStore<
         _client = new CosmosClient(connectionString: _connectionString, clientOptions: new CosmosClientOptions() { Serializer = new CosmosSystemTextJsonSerializer() });
     }
 
-    private string IdPrefix => $"{_environmentId}-{_documentType}-";
+    private string IdPrefix => $"{_documentType}-";
     private string PrefixId(string id) => id.StartsWith(IdPrefix) ? id : $"{IdPrefix}{id}";
     private string CleanId(string prefixedId) => prefixedId.StartsWith(IdPrefix) ? prefixedId.Substring(IdPrefix.Length) : prefixedId;
 
@@ -120,7 +117,7 @@ public class DefaultingCosmosKeyValueStore<DocumentT> : DefaultingKeyVaultStore<
     {
         var container = await GetContainer(cancellationToken);
         var query = container.GetItemLinqQueryable<DocumentT>()
-            .Where(doc => doc.id == PrefixId(id) && doc.EnvironmentId == _environmentId && doc.DocumentType == _documentType)
+            .Where(doc => doc.id == PrefixId(id) && doc.DocumentType == _documentType)
             .ToQueryDefinition();
 
         var iterator = container.GetItemQueryIterator<DocumentT>(query, requestOptions: new QueryRequestOptions() { MaxItemCount = 1});

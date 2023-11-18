@@ -65,7 +65,7 @@ public class GraphUserManager : IGraphUserManager
     private string[] UserSelectList => new string[] { "displayName", "id", "givenName", "surname" };
     
     private Task<AzureUser?> GetAzureUserAsync(string id, CancellationToken cancellationToken) => _client.Users[id].GetAsync(req => {  req.QueryParameters.Select = UserSelectList; }, cancellationToken: cancellationToken);
-    private UserProfileData CustomDefaultProfileDataDocumentForAzureUser(AzureUser azureUser) => new UserProfileData {EnvironmentId = _appSettings.EnvironmentId, id = azureUser.Id, DisplayName = azureUser.DisplayName, Role = ""};
+    private UserProfileData CustomDefaultProfileDataDocumentForAzureUser(AzureUser azureUser) => new UserProfileData {id = azureUser.Id, DisplayName = azureUser.DisplayName, Role = ""};
     
     public async IAsyncEnumerable<IGraphUser> GetGraphUsersAsync([EnumeratorCancellation] CancellationToken cancellationToken)
     {

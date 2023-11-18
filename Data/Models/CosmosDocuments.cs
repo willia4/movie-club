@@ -5,7 +5,6 @@ namespace zinfandel_movie_club.Data.Models;
 public abstract class CosmosDocument
 {
     public string? id { get; set; }
-    public string? EnvironmentId { get; set; }
     public abstract string? DocumentType { get; }
 }
 
