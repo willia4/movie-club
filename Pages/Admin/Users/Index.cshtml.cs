@@ -53,6 +53,6 @@ public class Index : PageModel
         };
         
         await _userManager.SetUserRole(user, newRole, cancellationToken);
-        return new RedirectToPageResult("/Admin/Users");
+        return new RedirectToPageResult("/Admin/Users/Index");
     }
 }
