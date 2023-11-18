@@ -2,12 +2,18 @@
 
 public class DatabaseConfig
 {
-    public CosmosConfig Cosmos { get; set; } = new();
+    public CosmosConfig Cosmos { get; init; } = new();
+    public StorageAccountConfig StorageAccount { get; init; } = new();
 }
 
 public class CosmosConfig
 {
-    public string ConnectionString { get; set; } = "";
-    public string Database { get; set; } = "";
-    public string Container { get; set; } = "";
+    public string ConnectionString { get; init; } = "";
+    public string Database { get; init; } = "";
+    public string Container { get; init; } = "";
+}
+
+public class StorageAccountConfig
+{
+    public string ConnectionString { get; init; } = "";
 }

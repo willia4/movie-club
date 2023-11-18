@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Net;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Azure.Cosmos;
@@ -12,10 +13,28 @@ using zinfandel_movie_club.Data;
 using zinfandel_movie_club.Authentication;
 using zinfandel_movie_club.Config;
 using zinfandel_movie_club.Data.Models;
+using ApplicationIdentity = zinfandel_movie_club.Config.ApplicationIdentity;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var dataProtectionKeyUrl = builder
+    .Configuration
+    .GetSection("DataProtection")
+    .GetValue<string>("KeyVaultKeyUri");
+
+builder.Services
+    .AddDataProtection()
+    .PersistKeysToAzureBlobStorage(sp =>
+    {
+        var connectionString = sp.GetRequiredService<IOptions<DatabaseConfig>>().Value.StorageAccount.ConnectionString;
+        var dataProtection = sp.GetRequiredService<IOptions<DataProtectionConfig>>().Value;
+        return new Azure.Storage.Blobs.BlobClient(
+            connectionString: connectionString,
+            blobContainerName: dataProtection.StorageAccountContainer,
+            blobName: dataProtection.StorageAccountBlob);
+    })
+    .ProtectKeysWithAzureKeyVault(dataProtectionKeyUrl, sp => sp.GetRequiredService<Azure.Core.TokenCredential>());
+
 builder.Services.AddMicrosoftIdentityWebAppAuthentication(builder.Configuration, "AzureAdB2C");
 builder.Services
     .AddRazorPages(options =>
@@ -72,6 +91,16 @@ builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSet
 builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("Database"));
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<DatabaseConfig>>().Value.Cosmos);
 builder.Services.Configure<TMDBConfig>(builder.Configuration.GetSection("TheMovieDatabase"));
+builder.Services.Configure<ApplicationIdentity>(builder.Configuration.GetSection("ApplicationIdentity"));
+builder.Services.Configure<DataProtectionConfig>(builder.Configuration.GetSection("DataProtection"));
+builder.Services.AddSingleton<Azure.Core.TokenCredential>(sp =>
+{
+    var config = sp.GetRequiredService<IOptions<ApplicationIdentity>>().Value;
+    return new Azure.Identity.ClientSecretCredential(
+        tenantId: config.TenantId,
+        clientId: config.ClientId,
+        clientSecret: config.ClientSecret);
+});
 
 builder.Services.AddSingleton<IUserProfileKeyValueStore, UserProfileKeyValueStore>();
 builder.Services.AddSingleton<IGraphUserManager, GraphUserManager>();

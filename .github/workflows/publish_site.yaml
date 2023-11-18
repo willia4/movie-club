@@ -70,6 +70,14 @@ jobs:
           CMD+="-e 'DATABASE__COSMOS__DATABASE=${{ secrets.COSMOS_DATABASE }}' "
           CMD+="-e 'DATABASE__COSMOS__CONTAINER=${{ secrets.COSMOS_CONTAINER }}' "
           
+          CMD+="-e 'DATABASE__STORAGEACCOUNT__CONNECTIONSTRING=${{ secrets.STORAGEACCOUNT_CONNECTIONSTRING }}' "
+          
+          CMD+="-e 'DATAPROTECTION__KEYVAULTKEYURI=${{ secrets.DATAPROTECTION_KEYVAULTKEYURI }}' "
+          
+          CMD+="-e 'APPLICATIONIDENTITY__TENANTID=${{ secrets.APPLICATIONIDENTITY_TENANTID }}' "
+          CMD+="-e 'APPLICATIONIDENTITY__CLIENTID=${{ secrets.APPLICATIONIDENTITY_CLIENTID }}' "
+          CMD+="-e 'APPLICATIONIDENTITY__CLIENTSECRET=${{ secrets.APPLICATIONIDENTITY_CLIENTSECRET }}' "
+          
           CMD+="-e 'THEMOVIEDATABASE__APITOKEN=${{ secrets.TMDB_TOKEN }}' "
 
           CMD+="--label 'traefik.enable=true' "
