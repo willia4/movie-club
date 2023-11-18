@@ -116,7 +116,11 @@ public class TheMovieDatabase : IMovieDatabase
 
             foreach (var movieResult in results.Results)
             {
-                yield return new MovieSearchResult(Id: movieResult.Id, Title: movieResult.Title);
+                var movieHref = string.IsNullOrEmpty(movieResult.PosterPath)
+                    ? ""
+                    : $"https://image.tmdb.org/t/p/w185/{movieResult.PosterPath}";
+                
+                yield return new MovieSearchResult(Id: movieResult.Id, Title: movieResult.Title, Overview: movieResult.Overview, PosterHref: movieHref, ReleaseDate: movieResult.ReleaseDate );
             }
 
             if (results.CurrentPage < results.TotalPages)
@@ -137,6 +141,8 @@ public class TheMovieDatabase : IMovieDatabase
         [JsonPropertyName("poster_path")] public string PosterPath { get; set; } = "";
         [JsonPropertyName("backdrop_path")] public string BackdropPath { get; set; } = "";
         [JsonPropertyName("genre_ids")] public ImmutableList<int> GenreIds { get; set; } = ImmutableList<int>.Empty;
+        [JsonPropertyName("release_date")] public string ReleaseDate { get; set; } = "";
+        
         [JsonPropertyName("title")] public string Title { get; set; } = "";
     }
     

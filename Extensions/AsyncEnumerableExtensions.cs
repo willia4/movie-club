@@ -83,4 +83,15 @@ public static class AsyncEnumerableExtensions
 
         return default;
     }
+
+    public static async IAsyncEnumerable<T> TakeUpTo<T>(this IAsyncEnumerable<T> items, int max, [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        var count = 0;
+        await foreach (var item in items.WithCancellation(cancellationToken))
+        {
+            if (count >= max) yield break;
+            yield return item;
+            count++;
+        }
+    }
 }

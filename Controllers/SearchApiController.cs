@@ -24,9 +24,9 @@ public class SearchApiController : Controller
     [HttpPost]
     public async IAsyncEnumerable<SearchMoviesResponse> SearchMoviesPost([FromBody] Models.SearchMoviesRequest req, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var res in _movieDb.Search("Blues Brothers", cancellationToken))
+        await foreach (var res in _movieDb.Search(req.TitleSearch, cancellationToken).TakeUpTo(req.MaxResults, cancellationToken))
         {
-            yield return new SearchMoviesResponse(Id: res.Id.ToString(), Title: res.Title);
+            yield return new SearchMoviesResponse(Id: res.Id.ToString(), Title: res.Title, Overview: res.Overview, PosterHref: res.PosterHref, ReleaseDate: res.ReleaseDate);
         }
     }
 }

@@ -9,5 +9,46 @@
 }
 
 <div>
-    <button id="search">Search</button>    
+    <form id="search-form">
+        <div class="input-group rounded search-box">
+            
+            <input type="search" class="form-control" id="search-box" placeholder="Search"/>
+            
+            <button type="button" id="search-button" class="btn btn-primary">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+    </form>
+    <div class="search-results hidden">
+        
+    </div>
+    
+    <form name="add-movie" method="post">
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" class="form-control" id="title" name="title"/>
+        </div>
+    </form>
 </div>
+
+<template id="search-result-spinner-template">
+    <img src="/img/spinner.png" alt="spinner" class="spinner"/>
+</template>
+
+<template id="search-result-template">
+    <div class="search-result-container">
+        <div class="search-result-image-container">
+            <img src="" alt=""/>
+        </div>
+        <div class="search-result-data-container">
+            <a href="" class="title-link"><div class="title"></div></a>
+            <div class="info">
+                <div class="release-date"></div>
+            </div>
+            <div class="overview"></div>
+        </div>
+        <div class="search-result-add-button-container">
+            <button type="button"><i class="bi bi-plus-circle-fill"></i></button>
+        </div>
+    </div>
+</template>
