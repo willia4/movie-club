@@ -59,7 +59,6 @@ jobs:
           CMD+="-e 'AZUREADB2C__CLIENTID=${{ secrets.AB2C_CLIENTID }}' "
           CMD+="-e 'AZUREADB2C__DOMAIN=${{ secrets.AB2C_DOMAIN }}' "
           
-          CMD+="-e 'APPSETTINGS__ENVIRONMENTID=${{ vars.ENVIRONMENTID }}' "
           CMD+="-e 'APPSETTINGS__SUPERUSERIDS__0=${{ secrets.JAMESWILL_ID }}' "
           
           CMD+="-e 'GRAPHAPI__CLIENTID=${{ secrets.GRAPH_CLIENTID }}' "
