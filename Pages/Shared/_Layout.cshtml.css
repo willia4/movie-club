@@ -27,7 +27,7 @@ div.logo-container .logo-link a
   text-align: center;
   word-break: break-all;
 
-  font-family: "blakely", sans-serif;
+  font-family: var(--header-menu-font);
   font-weight: 700;
   font-style: normal;
 
@@ -49,10 +49,9 @@ div.logo-without-page-name .logo-link a
 div.logo-with-page-name .page-name
 {
   font-size: 30px;
-  font-weight: bold;
   text-align: center;
   
-  font-family: "doublebass", sans-serif;
+  font-family: var(--header-page-name-font);
   font-weight: 400;
   font-style: normal;
   color: var(--alternate-bright-color);
@@ -61,5 +60,5 @@ div.logo-with-page-name .page-name
 /* Because of the way ASP.Net's isolated CSS plays with the <a> tag helper, we can't style the actual anchor tag here */
 /* custom_bootstrap.scss sets some variables which are used by the anchor tag as well */
 .nav-item {
-  font-family: "blakely", sans-serif;
+  font-family: var(--header-menu-font);
 }

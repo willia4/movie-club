@@ -4,7 +4,7 @@
     border-right: 2px solid black;
     border-bottom: 2px solid black;
     
-    filter: drop-shadow(4px 4px 6px gray);
+    filter: drop-shadow(4px 4px 6px rgb(128, 128, 128));
     z-index: 50;
     min-height: 100px;
     max-height: 50vh;
@@ -31,6 +31,22 @@ img.spinner {
     display: grid;
     grid-template-columns: auto 6fr .5fr;
     margin-bottom: 25px;
+}
+
+.search-results .search-cancel-container {
+    margin-bottom: 5px;
+    text-align: right;
+}
+
+.search-results .search-cancel-container button {
+    color: var(--bright-background-color);
+    text-decoration: none;
+    font-family: var(--header-menu-font);
+    font-size: 16pt;
+}
+
+.search-results .search-cancel-container button:hover {
+    text-decoration: underline;
 }
 
 .search-result-container .search-result-image-container {

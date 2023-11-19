@@ -13,7 +13,8 @@
     const searchBoxInput = document.getElementById("search-box");
     const searchResults = document.querySelector("div.search-results");
     const searchButton = document.getElementById("search-button");
-    
+    const cancelButton = document.getElementById("search-cancel");
+
     const searchResultTemplate = document.getElementById("search-result-template");
     const spinnerTemplate = document.getElementById("search-result-spinner-template");
     /** @function
@@ -67,6 +68,13 @@
             searchForm.addEventListener("submit", doSearch);
         }
 
+        if (cancelButton) {
+            cancelButton.addEventListener("click", (evt) => {
+                evt.preventDefault();
+                searchResults.classList.add("hidden");
+            })
+        }
+        
         /** DEBUG **/
         const fakeResults = [
             {
@@ -90,11 +98,22 @@
     });
 
     function clearSearchResultsDisplay() {
+        function findNextNodeToDelete() {
+            for(let child of searchResults.children) {
+                if (!child.classList.contains("do-not-clear")) {
+                    return child;
+                }
+            }
+            
+            return undefined;
+        }
+
         if (searchResults) {
-            let firstChild = searchResults.firstChild;
-            while (firstChild) {
-                searchResults.removeChild(firstChild);
-                firstChild = searchResults.firstChild;
+            let next = findNextNodeToDelete();
+            while (next) {
+                if (next)
+                searchResults.removeChild(next);
+                next = findNextNodeToDelete();
             }
         }
     }

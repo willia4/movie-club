@@ -3,6 +3,9 @@
   --dark-background-color: #302b28;
   --alternate-bright-color: #f3da68;
   --white-background-color: #f8f7f7;
+  
+  --header-menu-font: "blakely", sans-serif;
+  --header-page-name-font: "doublebass", sans-serif;
 }
 html {
   font-size: 14px;
