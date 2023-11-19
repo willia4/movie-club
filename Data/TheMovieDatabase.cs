@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
@@ -11,6 +12,7 @@ namespace zinfandel_movie_club.Data;
 public interface IMovieDatabase
 {
     public IAsyncEnumerable<Models.MovieSearchResult> Search(string searchText, CancellationToken cancellationToken);
+    public Task<MovieDetailResult?> GetDetails(int id, CancellationToken cancellationToken);
 }
 
 public enum BackdropSize
@@ -83,6 +85,37 @@ public class TheMovieDatabase : IMovieDatabase
         return req;
     }
 
+    public async Task<MovieDetailResult?> GetDetails(int id, CancellationToken cancellationToken)
+    {
+        var req = CreateRequest($"/3/movie/{id}");
+        using var client = _clientFactory.CreateClient();
+        var res = await client.SendAsync(req, cancellationToken);
+
+        var body = await res.Content.ReadAsStringAsync(cancellationToken);
+        if (res.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        if (!res.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException($"Could not load details for movie {id}: {body}");
+        }
+
+        var details = System.Text.Json.JsonSerializer.Deserialize<TmdbDetailResponse>(body)!;
+        
+        var posterHref = string.IsNullOrEmpty(details.PosterPath)
+            ? ""
+            : $"https://image.tmdb.org/t/p/w780/{details.PosterPath}";
+        
+        var backdropHref = string.IsNullOrEmpty(details.BackdropPath)
+            ? ""
+            : $"https://image.tmdb.org/t/p/w1280/{details.BackdropPath}";
+
+        return new MovieDetailResult(Id: details.Id, Title: details.Title, Overview: details.Overview,
+            PosterHref: posterHref, BackdropHref: backdropHref, ReleaseDate: details.ReleaseDate, RuntimeMinutes: details.RuntimeMinutes);
+    }
+
     public async IAsyncEnumerable<Models.MovieSearchResult> Search(string searchText, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var page = 1;
@@ -98,7 +131,7 @@ public class TheMovieDatabase : IMovieDatabase
                 .SetItem("page", $"{page}");
 
             var req = CreateRequest(path, query);
-            var client = _clientFactory.CreateClient();
+            using var client = _clientFactory.CreateClient();
             var res = await client.SendAsync(req, cancellationToken);
 
             var body = await res.Content.ReadAsStringAsync(cancellationToken);
@@ -152,5 +185,24 @@ public class TheMovieDatabase : IMovieDatabase
         [JsonPropertyName("results")] public ImmutableList<TmdbSearchResponseMovie> Results { get; set; } = ImmutableList<TmdbSearchResponseMovie>.Empty;
         [JsonPropertyName("total_pages")] public int TotalPages { get; set; }
         [JsonPropertyName("total_results")] public int TotalResults { get; set; }
+    }
+
+    private class TmdbDetailResponseGenre
+    {
+        [JsonPropertyName("id")] public int Id { get; set; }
+        [JsonPropertyName("name")] public string Name { get; set; } = "";
+    }
+    
+    private class TmdbDetailResponse
+    {
+        [JsonPropertyName("genres")] public ImmutableList<TmdbDetailResponseGenre> Genres { get; set; } = ImmutableList<TmdbDetailResponseGenre>.Empty;
+        [JsonPropertyName("id")] public int Id { get; set; }
+        [JsonPropertyName("imdb_id")] public string ImdbId {get; set; } = "";
+        [JsonPropertyName("title")] public string Title { get; set; } = "";
+        [JsonPropertyName("overview")] public string Overview { get; set; } = "";
+        [JsonPropertyName("poster_path")] public string PosterPath { get; set; } = "";
+        [JsonPropertyName("backdrop_path")] public string BackdropPath { get; set; } = "";
+        [JsonPropertyName("release_date")] public string ReleaseDate { get; set; } = "";
+        [JsonPropertyName("runtime")] public int RuntimeMinutes { get; set; }
     }
 }

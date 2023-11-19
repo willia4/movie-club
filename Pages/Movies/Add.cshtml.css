@@ -19,6 +19,12 @@
     border-radius: var(--bs-border-radius)
 }
 
+@media (max-width: 575px) {
+    .search-results {
+        max-height: 80vh;
+    }
+} 
+
 .search-results.hidden {
     display: none;
 }
@@ -89,7 +95,28 @@ img.spinner {
 .search-result-container .search-result-add-button-container button {
     height: 30%;
     width: 80%;
+    min-width: 30px;
     margin: auto;
     background-color:  var(--bright-background-color);
     color: var(--dark-background-color);
+}
+
+.search-result-container .search-result-add-button-container button.not-loading .bi-plus-circle-fill {
+    display: inline;
+}
+
+.search-result-container .search-result-add-button-container button.loading .bi-plus-circle-fill {
+    display: none;
+}
+
+.search-result-container .search-result-add-button-container button.not-loading .spinner-border {
+    display: none;
+}
+
+.search-result-container .search-result-add-button-container button.loading .spinner-border {
+    display: inline-block;
+}
+
+#add-form-container {
+    margin-top: 30px;
 }

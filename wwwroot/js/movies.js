@@ -7,6 +7,16 @@
  * @property {string} releaseDate
  */
 
+/**@typedef ApiDetailResult
+ * @type {object}
+ * @property {string} id
+ * @property {string} title
+ * @property {string} overview
+ * @property {string} posterHref
+ * @property {string} backdropHref
+ * @property {string} releaseDate
+ * @property {number} runtimeMinutes
+ */
 (() => {
     const searchForm = document.getElementById("search-form");
     const searchBox = document.querySelector("div.search-box");
@@ -37,6 +47,21 @@
             throw new Error("Invalid response from server: " + res.status);
         }
 
+        const body = await res.text();
+        return JSON.parse(body);
+    }
+
+    /** @function
+     * 
+     * @param {string} id
+     * @returns {Promise<ApiDetailResult>}
+     */
+    async function sendDetailsRequest(id){
+        const res = await fetch("/api/v1/movie/" + id, { method: "GET" });
+        if (!res.ok) {
+            throw new Error("Invalid response from server: " + res.status);
+        }
+        
         const body = await res.text();
         return JSON.parse(body);
     }
@@ -92,8 +117,8 @@
                 "releaseDate": "2009-01-15"
             }
         ];
-        // showSearchResultsWithSpinner();
-        // setSearchResultsDisplay(fakeResults);
+        showSearchResultsWithSpinner();
+        setSearchResultsDisplay(fakeResults);
         /** END DEBUG **/
     });
 
@@ -134,7 +159,8 @@
             console.error("Could not load search result template");
             return;
         }
-
+        
+        const movieId = result.id;
         const newEl = searchResultTemplate.content.cloneNode(true);
         newEl.querySelector("a.title-link").href = "https://www.themoviedb.org/movie/" + result.id;
         newEl.querySelector("div.title").textContent = result.title;
@@ -147,6 +173,35 @@
             newEl.querySelector("div.search-result-image-container img").setAttribute("style", "display: none");
         }
 
+        newEl.querySelector(".search-result-add-button-container button").addEventListener("click", async (evt) => {
+            evt.preventDefault();
+            
+            // first, disable all existing buttons; no need to worry about re-enabling them later, because they'll be destroyed the next 
+            // time this view is shown
+            const buttons = Array.from(document.querySelectorAll(".search-result-container .search-result-add-button-container button"));
+            for (let b of buttons) {
+                b.disabled = true;
+            }
+            
+            // second, just for our button, swap it to the loading spinner
+            evt.currentTarget.classList.add("loading");
+            evt.currentTarget.classList.remove("not-loading");
+            
+            try {
+                const details= await sendDetailsRequest(movieId);
+                document.getElementById("title").value = details.title;
+                document.getElementById("overview").value = details.overview;
+                document.getElementById("runtime").value = details.runtimeMinutes;
+                document.getElementById("tmdb-id").value = details.id;
+                document.getElementById("tmdb-poster").value = details.posterHref;
+            } 
+            catch (err) {
+                console.log(err);
+                alert("Could not copy movie details: " + err);
+            }
+
+            searchResults.classList.add("hidden");
+        })
         searchResults.appendChild(newEl);
     }
 

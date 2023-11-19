@@ -23,12 +23,37 @@
         <div class="search-cancel-container do-not-clear"><button id="search-cancel" type="button" class="btn btn-link">Cancel</button></div>
     </div>
     
-    <form name="add-movie" method="post">
-        <div class="mb-3">
-            <label for="title" class="form-label">Title</label>
-            <input type="text" class="form-control" id="title" name="title"/>
-        </div>
-    </form>
+    <div id="add-form-container">
+        <form id="add-form" name="add-movie" method="post">
+            <div class="mb-3">
+                <label for="title" class="form-label">Title</label>
+                <input type="text" class="form-control" id="title" name="title"/>
+            </div>
+            
+            <div class="mb-3">
+                <label for="overview" class="form-label">Overview</label>
+                <textarea class="form-control" id="overview" name="overview" rows="4"></textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label for="rt-critic" class="form-label">Rotten Tomatoes - Critic Score</label>
+                <input type="number" class="form-control" id="rt-critic" name="rt-critic"/>
+            </div>
+            
+            <div class="mb-3">
+                <label for="rt-user" class="form-label">Rotten Tomatoes - User Score</label>
+                <input type="number" class="form-control" id="rt-user" name="rt-user"/>
+            </div>
+            
+            <div class="mb-3">
+                <label for="runtime" class="form-label">Runtime (Minutes)</label>
+                <input type="number" class="form-control" id="runtime" name="runtime"/>
+            </div>
+            
+            <input type="hidden" id="tmdb-id" name="tmdb-id"/>
+            <input type="hidden" id="tmdb-poster" name="tmdb-poster"/>
+        </form>
+    </div>
 </div>
 
 <template id="search-result-spinner-template">
@@ -48,7 +73,10 @@
             <div class="overview"></div>
         </div>
         <div class="search-result-add-button-container">
-            <button type="button"><i class="bi bi-plus-circle-fill"></i></button>
+            <button type="button" class="not-loading">
+                <i class="bi bi-plus-circle-fill"></i>
+                <span class="spinner-border spinner-border-sm"></span>
+            </button>
         </div>
     </div>
 </template>
