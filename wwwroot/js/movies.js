@@ -24,7 +24,13 @@
     const searchResults = document.querySelector("div.search-results");
     const searchButton = document.getElementById("search-button");
     const cancelButton = document.getElementById("search-cancel");
-
+    const addForm = document.getElementById("add-form");
+    
+    const coverImageFileInput = document.getElementById("uploaded-file");
+    const coverImageContainer = document.querySelector('.cover-image-container');
+    const coverImageImg = document.querySelector(".cover-image-container img");
+    const posterImageUrlInput = document.getElementById("tmdb-poster");
+    
     const searchResultTemplate = document.getElementById("search-result-template");
     const spinnerTemplate = document.getElementById("search-result-spinner-template");
     /** @function
@@ -100,6 +106,51 @@
             })
         }
         
+        if (addForm) {
+            addForm.addEventListener("submit", (evt) => {
+               if (addForm.checkValidity() === false) {
+                   evt.preventDefault();
+                   evt.stopPropagation();
+               }
+               addForm.classList.add('was-validated');
+            });
+        }
+        
+        if (coverImageImg && coverImageFileInput) {
+            coverImageFileInput.addEventListener("change", (evt) => {
+                const file = coverImageFileInput.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.addEventListener("load", (readerEvent) => {
+                        coverImageImg.setAttribute("src", readerEvent.target.result);
+                        posterImageUrlInput.value = null;
+                    });
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            coverImageContainer.addEventListener("dragover", (evt) => {
+               evt.preventDefault(); 
+            });
+
+            coverImageContainer.addEventListener("drop", (evt) => {
+                evt.preventDefault();
+                const files = evt.dataTransfer.files; 
+                if (files) {
+                    const file = files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.addEventListener("load", (readerEvent) => {
+                            posterImageUrlInput.value = null;
+                            coverImageImg.setAttribute("src", readerEvent.target.result);
+                            coverImageFileInput.files = files;
+                        });
+                        reader.readAsDataURL(file);
+                    }
+                }
+            })
+        }
+
         /** DEBUG **/
         const fakeResults = [
             {
@@ -117,8 +168,8 @@
                 "releaseDate": "2009-01-15"
             }
         ];
-        showSearchResultsWithSpinner();
-        setSearchResultsDisplay(fakeResults);
+        // showSearchResultsWithSpinner();
+        // setSearchResultsDisplay(fakeResults);
         /** END DEBUG **/
     });
 
@@ -193,7 +244,12 @@
                 document.getElementById("overview").value = details.overview;
                 document.getElementById("runtime").value = details.runtimeMinutes;
                 document.getElementById("tmdb-id").value = details.id;
+
                 document.getElementById("tmdb-poster").value = details.posterHref;
+                if (details.posterHref) {
+                    coverImageFileInput.value = null;
+                    coverImageImg.setAttribute("src", details.posterHref);
+                }
             } 
             catch (err) {
                 console.log(err);

@@ -169,9 +169,9 @@ var csp = new Lazy<string>(() =>
     // see https://helpx.adobe.com/fonts/using/content-security-policy.html for specifics around typekit
     var csp = "default-src 'self'; " +
                        "script-src 'self' p.typekit.net use.typekit.net; " +
-                       "style-src 'self' 'unsafe-inline' p.typekit.net use.typekit.net cdn.jsdelivr.net; " +
-                       "img-src 'self' p.typekit.net use.typekit.net cdn.jsdelivr.net image.tmdb.org; " +
-                       "font-src 'self' p.typekit.net use.typekit.net cdn.jsdelivr.net; " +
+                       "style-src 'self' 'unsafe-inline' p.typekit.net use.typekit.net cdn.jsdelivr.net data:; " +
+                       "img-src 'self' p.typekit.net use.typekit.net cdn.jsdelivr.net image.tmdb.org data:; " +
+                       "font-src 'self' p.typekit.net use.typekit.net cdn.jsdelivr.net data:; " +
                        $"connect-src 'self' performance.typekit.net {instance.Host} {domain}";
     return csp;
 });

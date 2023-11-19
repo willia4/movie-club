@@ -120,3 +120,21 @@ img.spinner {
 #add-form-container {
     margin-top: 30px;
 }
+
+.cover-image-container {
+    margin-bottom: 5px;
+}
+
+.cover-image-frame {
+    min-height: 312px;
+    min-width: 212px;
+
+    padding: 5px;
+    border: 1px solid #000000;
+    
+    display: inline-block;
+}
+
+.cover-image-frame img {
+    max-width: 200px;
+}

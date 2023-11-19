@@ -8,6 +8,13 @@
     <script type="text/javascript" src="~/js/movies.js"></script>
 }
 
+@section styles {
+    <style>
+        input[type=file] {
+            color: transparent !important;
+        }
+    </style>
+}
 <div>
     <form id="search-form">
         <div class="input-group rounded search-box">
@@ -24,34 +31,53 @@
     </div>
     
     <div id="add-form-container">
-        <form id="add-form" name="add-movie" method="post">
-            <div class="mb-3">
+        <form id="add-form" name="add-movie" method="post" novalidate>
+            <div class="form-group mb-3">
                 <label for="title" class="form-label">Title</label>
-                <input type="text" class="form-control" id="title" name="title"/>
+                <input type="text" class="form-control" id="title" name="title" required/>
+                <div class="invalid-feedback">
+                    Required
+                </div>
+                <div class="valid-feedback"></div>
             </div>
             
-            <div class="mb-3">
+            <div class="form-group mb-3">
                 <label for="overview" class="form-label">Overview</label>
                 <textarea class="form-control" id="overview" name="overview" rows="4"></textarea>
+                <div class="valid-feedback"></div>
             </div>
             
-            <div class="mb-3">
+            <div class="form-group mb-3">
                 <label for="rt-critic" class="form-label">Rotten Tomatoes - Critic Score</label>
                 <input type="number" class="form-control" id="rt-critic" name="rt-critic"/>
+                <div class="valid-feedback"></div>
             </div>
             
-            <div class="mb-3">
+            <div class="form-group mb-3">
                 <label for="rt-user" class="form-label">Rotten Tomatoes - User Score</label>
                 <input type="number" class="form-control" id="rt-user" name="rt-user"/>
+                <div class="valid-feedback"></div>
             </div>
             
-            <div class="mb-3">
+            <div class="form-group mb-3">
                 <label for="runtime" class="form-label">Runtime (Minutes)</label>
                 <input type="number" class="form-control" id="runtime" name="runtime"/>
+                <div class="valid-feedback"></div>
             </div>
             
             <input type="hidden" id="tmdb-id" name="tmdb-id"/>
             <input type="hidden" id="tmdb-poster" name="tmdb-poster"/>
+            
+            <div class="form-group mb-3">
+                <label for="uploaded-file" class="form-label">Cover Image</label>
+                <div class="cover-image-container">
+                    <div class="cover-image-frame">
+                        <img alt="" src=""/>                        
+                    </div>
+                </div>
+                <input type="file" class="form-control-file" id="uploaded-file" name="uploaded-file"/>
+            </div>
+            <button type="submit" class="btn btn-primary">Add</button>
         </form>
     </div>
 </div>

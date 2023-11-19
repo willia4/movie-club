@@ -48,3 +48,7 @@ $nav-link-font-weight: 500;
 
 @import "../node_modules/bootstrap/scss/helpers";
 @import "../node_modules/bootstrap/scss/utilities/api";
+
+.was-validated .form-control:valid {
+  background-image: none;
+}
