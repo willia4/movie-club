@@ -29,9 +29,9 @@ public class Index : PageModel
         id switch
         {
             null => throw new Exceptions.BadRequestException("Invalid route"),
-            string when string.IsNullOrWhiteSpace(id) => throw new Exceptions.BadRequestException("Invalid route"),
-            "_self" => (true, User.NameIdentifier()),
-            string => (false, id.Trim()) 
+            not null when string.IsNullOrWhiteSpace(id) => throw new Exceptions.BadRequestException("Invalid route"),
+            "_self" => (true, User.NameIdentifier() ?? throw new InvalidOperationException("Could not find name identifier claim for logged in user")),
+            not null => (false, id.Trim()) 
         };
     
     public void OnGet(string id)
@@ -41,7 +41,7 @@ public class Index : PageModel
         (var _, id) = FixupPageId(id);
         CanEdit = UserCanEditPage(id);
         
-        MemberRole = User.UserRole();
+        MemberRole = User.UserRole() ?? "";
         DisplayName = User.DisplayName();
     }
 
