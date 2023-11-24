@@ -9,6 +9,7 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using zinfandel_movie_club;
 using zinfandel_movie_club.Data;
 using zinfandel_movie_club.Authentication;
 using zinfandel_movie_club.Config;
@@ -110,7 +111,7 @@ builder.Services.AddSingleton<Branding>();
 builder.Services.AddMemoryCache();
 builder.Services.AddTransient<ClaimRoleDecoratorMiddleware>();
 builder.Services.AddScoped<IMovieDatabase, TheMovieDatabase>();
-
+builder.Services.AddScoped<IUriDownloader, UriDownloader>();
 builder.Services.AddHttpClient();
 
 var app = builder.Build();
