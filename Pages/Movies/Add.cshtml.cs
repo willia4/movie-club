@@ -24,7 +24,8 @@ public class Add : PageModel
     [BindProperty(Name="rt-critic")] [Range(0.0, 10.0)] public decimal? RottenTomatoesCriticScore { get; set; }
     [BindProperty(Name="rt-user")] [Range(0.0, 10.0)] public decimal? RottenTomatoesUserScore { get; set; }
     [BindProperty(Name="runtime")] public int? RuntimeMinutes { get; set; }
-
+    [BindProperty(Name="release-date")] public string ReleaseDate { get; set; }
+    
     [BindProperty(Name="tmdb-id")] public string TmdbId { get; set; } = "";
     [BindProperty(Name="tmdb-poster")] public string TmdbPoster { get; set; } = "";
     

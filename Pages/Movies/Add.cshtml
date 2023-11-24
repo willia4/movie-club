@@ -65,6 +65,15 @@
                 <div class="valid-feedback"></div>
             </div>
             
+            <div class="form-group mb-3" id="release-date-field-group">
+                <label for="release-date" class="form-label">Release Date</label>
+                <input type="text" class="form-control" id="release-date" name="release-date" placeholder="YYYY-MM-DD or YYYY-MM"/>
+                <div class="valid-feedback"></div>
+                <div class="invalid-feedback">
+                    Must be a valid date in YYYY-MM-DD or YYYY-MM format
+                </div>
+            </div>
+
             <input type="hidden" id="tmdb-id" name="tmdb-id"/>
             <input type="hidden" id="tmdb-poster" name="tmdb-poster"/>
             

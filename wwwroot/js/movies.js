@@ -31,8 +31,73 @@
     const coverImageImg = document.querySelector(".cover-image-container img");
     const posterImageUrlInput = document.getElementById("tmdb-poster");
     
+    const releaseDateInput = document.getElementById("release-date");
+    const releaseDateValidation = document.querySelector("#release-date-field-group div.invalid-feedback");
+
     const searchResultTemplate = document.getElementById("search-result-template");
     const spinnerTemplate = document.getElementById("search-result-spinner-template");
+
+    /** @function
+     * 
+     * @param {string} value
+     * @returns {string}
+     */
+    function validateFuzzyDate(value) {
+        value = value ? value.trim() : "";
+
+        if (!value) {
+            return "";
+        }
+
+        const yyyy_mm_dd_regex = /^(?<year>[1-9][0-9][0-9][0-9])-(?<month>[0-1][0-9])-(?<day>[0-3][0-9])$/;
+        const yyyy_mm_regex = /^(?<year>[1-9][0-9][0-9][0-9])-(?<month>[0-1][0-9])$/
+
+        const yyyy_mm_dd = yyyy_mm_dd_regex.exec(value);
+        const yyyy_mm = yyyy_mm_regex.exec(value);
+
+        if (!yyyy_mm && !yyyy_mm_dd)
+        {
+            return "Release date format must be either YYYY-MM-DD or YYYY-MM";
+        }
+
+        if (yyyy_mm)
+        {
+            const year = parseInt(yyyy_mm.groups.year, 10);
+            const month = parseInt(yyyy_mm.groups.month, 10);
+
+            if (month < 1 || month > 12)
+            {
+                return "Release date month must be a valid month between 01 and 12 inclusive";
+            }
+        }
+
+        if (yyyy_mm_dd)
+        {
+            const year = parseInt(yyyy_mm_dd.groups.year, 10);
+            const month = parseInt(yyyy_mm_dd.groups.month, 10);
+            const day = parseInt(yyyy_mm_dd.groups.day, 10);
+
+            if (month < 1 || month > 12)
+            {
+                return "Release date month must be a valid month between 01 and 12 inclusive";
+            }
+
+            if (day < 0)
+            {
+                return "Release date day must be greater or equal to 1";
+            }
+
+            // Date expects months to be zero indexed but our month is one-indexed so this is effectively next month - 1 day 
+            const lastDayOfMonth = new Date(year, month, 0).getDate();
+            if (day > lastDayOfMonth)
+            {
+                return "Day " + day + " is not valid in month " + year + "-" + month;
+            }
+        }
+
+        return "";
+    }
+    
     /** @function
      *
      * @param {string} title
@@ -116,6 +181,14 @@
             });
         }
         
+        if (releaseDateInput) {
+            releaseDateInput.addEventListener("change", (evt) => {
+                const validationMessage = validateFuzzyDate(releaseDateInput.value);
+                releaseDateInput.setCustomValidity(validationMessage);
+                releaseDateValidation.innerText = validationMessage;
+            });
+        }
+
         if (coverImageImg && coverImageFileInput) {
             coverImageFileInput.addEventListener("change", (evt) => {
                 const file = coverImageFileInput.files[0];
@@ -244,11 +317,18 @@
                 document.getElementById("overview").value = details.overview;
                 document.getElementById("runtime").value = details.runtimeMinutes;
                 document.getElementById("tmdb-id").value = details.id;
-
+                
                 document.getElementById("tmdb-poster").value = details.posterHref;
                 if (details.posterHref) {
                     coverImageFileInput.value = null;
                     coverImageImg.setAttribute("src", details.posterHref);
+                }
+                
+                // who knows what we will get back from TMDB; if it doens't match our validation rules
+                // just don't set it
+                if (validateFuzzyDate(details.releaseDate) === "")
+                {
+                    document.getElementById("release-date").value = details.releaseDate;
                 }
             } 
             catch (err) {
