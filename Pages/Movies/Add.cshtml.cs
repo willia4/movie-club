@@ -5,15 +5,18 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using NanoidDotNet;
 using Tavis.UriTemplates;
+using zinfandel_movie_club.Data;
 
 namespace zinfandel_movie_club.Pages.Movies;
 
 public class Add : PageModel
 {
     private readonly IUriDownloader _imageDownloader;
-    public Add(IUriDownloader imageDownloader)
+    private readonly IImageManager _imageManager;
+    public Add(IUriDownloader imageDownloader, IImageManager imageManager)
     {
         _imageDownloader = imageDownloader;
+        _imageManager = imageManager;
     }
 
     [BindProperty] [Required] public string Title { get; set; } = "";
@@ -30,7 +33,7 @@ public class Add : PageModel
         
     }
 
-    private async Task<(string contentType, string fileExtensions, ImmutableArray<byte> bytes)> GetCoverImageData(CancellationToken cancellationToken)
+    private async Task<(Uri? originalUri, string contentType, string fileExtensions, ImmutableArray<byte> bytes)> GetCoverImageData(CancellationToken cancellationToken)
     {
         var uploadedFile = Request?.Form?.Files?.Where(f => f.Name == "uploaded-file").FirstOrDefault();
         if (uploadedFile != null)
@@ -43,36 +46,47 @@ public class Add : PageModel
             using var ms = new MemoryStream();
             await s.CopyToAsync(ms, cancellationToken);
 
-            return (uploadedFile.ContentType, fileExtension, ms.ToArray().ToImmutableArray());
+            return (null, uploadedFile.ContentType, fileExtension, ms.ToArray().ToImmutableArray());
         }
 
         if (!string.IsNullOrWhiteSpace(TmdbPoster))
         {
+            var uri = new Uri(TmdbPoster);
             var downloadResult =
-                (await _imageDownloader.DownloadUri(new Uri(TmdbPoster), cancellationToken))
-                .MapError(original =>
-                {
-                    var x = new Exceptions.HttpException($"Could not download cover image from TMDB at {TmdbPoster}", HttpStatusCode.InternalServerError, original)
-                    {
-                        InternalMessage = $"{original.Message}"
-                    };
-                    return x;
-                });
+                (await _imageDownloader.DownloadUri(uri, cancellationToken))
+                .MapError(x => new Exceptions.HttpException($"Could not download cover image from TMDB at {TmdbPoster}", HttpStatusCode.InternalServerError, x)
+                                        { 
+                                            InternalMessage = $"{x.Message}"
+                                        });
 
             return downloadResult.Match(
-                (v) => (contentType: v.ContentType, fileExtensions: v.FileExtension, bytes: v.Data),
+                (v) => (uri, contentType: v.ContentType, fileExtensions: v.FileExtension, bytes: v.Data),
                 (ex) => throw ex);
         }
 
-        return ("", "", ImmutableArray<byte>.Empty);
+        return (null, "", "", ImmutableArray<byte>.Empty);
     }
     public async Task<IActionResult> OnPost(CancellationToken cancellationToken)
     {
         var newId = Nanoid.Generate()!;
         cancellationToken.ThrowIfCancellationRequested();
 
-        var (coverImageContentType, coverImageFileExtension, coverImageBytes) = await GetCoverImageData(cancellationToken);
-        
+        var (coverImageUri, coverImageContentType, coverImageFileExtension, coverImageBytes) = await GetCoverImageData(cancellationToken);
+
+        if (coverImageBytes.Length > 0)
+        {
+            var newMetadata = new Dictionary<string, string>();
+            if (coverImageUri != null)
+            {
+                newMetadata["originalUri"] = coverImageUri.ToString();
+            }
+
+            ;
+            var uploadResult = await _imageManager.UploadImage(Nanoid.Generate(), coverImageContentType, coverImageFileExtension, coverImageBytes, newMetadata, cancellationToken);
+            uploadResult
+                .MapError(x => x.ToInternalServerError("Could not save image"))
+                .ThrowIfError();
+        }
         return new RedirectToPageResult("Add");
         
     }

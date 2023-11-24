@@ -105,7 +105,7 @@ builder.Services.AddSingleton<Azure.Core.TokenCredential>(sp =>
 
 builder.Services.AddSingleton<IUserProfileKeyValueStore, UserProfileKeyValueStore>();
 builder.Services.AddSingleton<IGraphUserManager, GraphUserManager>();
-
+builder.Services.AddSingleton<IImageManager, ImageManager>();
 builder.Services.AddSingleton<Branding>();
 
 builder.Services.AddMemoryCache();

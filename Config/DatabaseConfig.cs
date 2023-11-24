@@ -16,4 +16,5 @@ public class CosmosConfig
 public class StorageAccountConfig
 {
     public string ConnectionString { get; init; } = "";
+    public string ImagesContainer { get; init; } = "";
 }
