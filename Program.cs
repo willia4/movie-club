@@ -103,8 +103,24 @@ builder.Services.AddSingleton<Azure.Core.TokenCredential>(sp =>
         clientSecret: config.ClientSecret);
 });
 
+builder.Services.AddScoped<IIdGenerator, IdGenerator>();
+builder.Services.AddScoped<MovieIdGenerator>();
+builder.Services.AddScoped<UserIdGenerator>();
+
 builder.Services.AddSingleton<IUserProfileKeyValueStore, UserProfileKeyValueStore>();
 builder.Services.AddSingleton<IGraphUserManager, GraphUserManager>();
+builder.Services.AddSingleton<ICosmosDocumentManager<zinfandel_movie_club.Data.Models.MovieDocument>>(sp =>
+{
+    var config = sp.GetRequiredService<CosmosConfig>();
+
+    return new CosmosDocumentManager<MovieDocument>(
+        connectionString: config.ConnectionString,
+        database: config.Database,
+        container: config.Container,
+        documentType: MovieDocument._DocumentType,
+        partitionKeyMaker: id => new PartitionKey(id));
+});
+
 builder.Services.AddSingleton<IImageManager, ImageManager>();
 builder.Services.AddSingleton<Branding>();
 

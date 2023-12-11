@@ -172,12 +172,33 @@
         }
         
         if (addForm) {
-            addForm.addEventListener("submit", (evt) => {
-               if (addForm.checkValidity() === false) {
-                   evt.preventDefault();
-                   evt.stopPropagation();
-               }
-               addForm.classList.add('was-validated');
+            addForm.addEventListener("submit", async (evt) => {
+                const form = evt.target;
+                
+                evt.preventDefault();
+                evt.stopPropagation();
+
+                form.classList.add('was-validated');
+                if (form.checkValidity() === false)
+                {
+                    return;
+                }
+                
+                console.log('Submitting form');
+                const url = new URL(form.action);
+
+                const res = await fetch(url, {
+                    method: form.method,
+                    redirect: "manual",
+                    body: new FormData(form)
+                });
+                console.log('Finished submitting form');
+                console.log(res);
+
+                if (res.type === 'opaqueredirect')
+                {
+                    window.location = res.url;
+                }
             });
         }
         

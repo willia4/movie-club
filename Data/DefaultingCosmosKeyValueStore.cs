@@ -196,9 +196,9 @@ public class DefaultingCosmosKeyValueStore<DocumentT> : DefaultingKeyVaultStore<
         var container = await GetContainer(cancellationToken);
         newDocument.id = PrefixId(id);
         var res = await container.UpsertItemAsync(newDocument, _partitionKeyMaker(newDocument.id), cancellationToken: cancellationToken);
-        if (res?.Resource is DocumentT updated)
+        if (res?.Resource is { } updated)
         {
-            return _cache.Set(id, null, res!.Resource!);            
+            return _cache.Set(id, null, updated);            
         }
 
         return newDocument;

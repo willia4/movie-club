@@ -9,10 +9,11 @@ namespace zinfandel_movie_club.Data;
 
 public interface IImageManager
 {
-    public Task<Result<ImageBlob,Exception>> UploadImage(string id, string contentType, string fileExtension, ImmutableArray<byte> data, IDictionary<string, string> metadata, CancellationToken cancellationToken);
+    public Task<Result<ImmutableList<(ImageSize, string)>,Exception>> UploadImage(string id, SixLabors.ImageSharp.Image image, IDictionary<string, string> metadata, CancellationToken cancellationToken);
 }
 
 public record ImageBlob(string StorageAccountName, string BlobId);
+
 
 public class ImageManager : IImageManager
 {
@@ -26,17 +27,17 @@ public class ImageManager : IImageManager
             blobContainerName: databaseConfig.Value.StorageAccount.ImagesContainer);
     }
 
-    public async Task<Result<ImageBlob, Exception>> UploadImage(string id, string contentType, string fileExtension, ImmutableArray<byte> data, IDictionary<string, string> metadata, CancellationToken cancellationToken)
+    private async Task<Result<BlobClient, Exception>> UploadBlob(string blobName, string contentType, IDictionary<string, string> metadata, ImmutableArray<byte> data, CancellationToken cancellationToken)
     {
         try
         {
-            await _client.UploadBlobAsync(blobName: id, content: data.AsBinaryData(), cancellationToken: cancellationToken);
+            await _client.UploadBlobAsync(blobName: blobName, content: data.AsBinaryData(), cancellationToken: cancellationToken);
+            var blob = _client.GetBlobClient(blobName);
             
-            var blob = _client.GetBlobClient(id);
             var properties = await blob.GetPropertiesAsync(cancellationToken: cancellationToken);
             if (!properties.HasValue)
             {
-                return Result<ImageBlob, Exception>.Error($"Could not get properties from blob after uploading {id}".ToException());
+                return Result<BlobClient, Exception>.Error($"Could not get properties from blob after uploading {blobName}".ToException());
             }
             
             var newHeaders = new BlobHttpHeaders
@@ -49,35 +50,63 @@ public class ImageManager : IImageManager
                 ContentHash = properties.Value.ContentHash
             };
 
-            var newMetadata =
-                (metadata ?? ImmutableDictionary<string, string>.Empty)
-                .ToImmutableDictionary()
-                .SetItem("originalFileExtension", fileExtension);
-
             try
             {
                 await blob.SetHttpHeadersAsync(newHeaders, cancellationToken: cancellationToken);
             }
             catch (Exception ex)
             {
-                return Result<ImageBlob, Exception>.Error($"Could not set headers for blob after uploading {id}: {ex.Message}".ToException(ex));
+                return Result<BlobClient, Exception>.Error($"Could not set headers for blob after uploading {blobName}: {ex.Message}".ToException(ex));
             }
             
             try
             {
-                await blob.SetMetadataAsync(newMetadata, cancellationToken: cancellationToken);                
+                await blob.SetMetadataAsync(metadata, cancellationToken: cancellationToken);                
             }
             catch (Exception ex)
             {
-                return Result<ImageBlob, Exception>.Error($"Could not set custom metadata for blob after uploading {id}: {ex.Message}".ToException(ex));
+                return Result<BlobClient, Exception>.Error($"Could not set custom metadata for blob after uploading {blobName}: {ex.Message}".ToException(ex));
             }
 
-            return Result<ImageBlob, Exception>.Ok(new ImageBlob(StorageAccountName: _client.AccountName, BlobId: blob.Name));
+            return Result<BlobClient, Exception>.Ok(blob);
         }
         catch (Exception outer)
         {
-            return Result<ImageBlob, Exception>.Error(outer);
+            return Result<BlobClient, Exception>.Error(outer);
         }
-        
+    }
+    
+    public async Task<Result<ImmutableList<(ImageSize, string)>, Exception>> UploadImage(string blobPrefix, SixLabors.ImageSharp.Image image, IDictionary<string, string> metadata, CancellationToken cancellationToken)
+    {
+        var sizedImages = ImageSize.AllImageSizes.Select(s => (s, s.SizedImage(image))).ToImmutableList();
+ 
+        var results = ImmutableList<(ImageSize, string)>.Empty;
+
+        foreach (var t in sizedImages)
+        {
+            var (size, img) = t;
+            var blobName = $"{blobPrefix}/{size.FileName}.png";
+            var blobBytes = img.ToPngImmutableByteArray();
+
+            var metadata_ =
+                metadata.ToImmutableDictionary()
+                    .SetItem("size", size.FileName);
+            
+            var uploadResult = await UploadBlob(
+                blobName: blobName,
+                contentType: "image/png",
+                metadata: metadata_,
+                data: blobBytes,
+                cancellationToken: cancellationToken);
+
+            if (uploadResult.IsError)
+            {
+                return uploadResult.ChangeResultTypeIfError<ImmutableList< (ImageSize, string)>>();
+            }
+
+            results = results.Add((size, blobName));
+        }
+
+        return Result<ImmutableList< (ImageSize, string)>, Exception>.Ok(results);
     }
 }
