@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
 
 namespace zinfandel_movie_club;
@@ -63,6 +64,30 @@ public static class ImageUtility
         return sizedImage.ToPngImmutableByteArray();
     }
 
+    public static ImmutableArray<byte> ToJpegImmutableByteArray(this Image image)
+    {
+        using var ms = new MemoryStream();
+        
+        var encoder = new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder
+        {
+            Quality = 85
+        };
+
+        image.Save(ms, encoder);
+        return ms.ToArray().ToImmutableArray();
+    }
+    
+    public static ImmutableArray<byte> ToJpegImmutableByteArray(this Image image, int newWidth)
+    {
+        var (currentWidth, _) = image.Size();
+        
+        // ResizeToWidth will always clone the image; since we only care about the bytes that we get out of it, 
+        // the cloning or lack of cloning is immaterial to us. So skip that step if the widths already match
+        var sizedImage = currentWidth == newWidth ? image : image.ResizeToWidth(newWidth);
+
+        return sizedImage.ToJpegImmutableByteArray();
+    }
+    
     public static Image Clone(this Image image)
     {
         using var ms = new MemoryStream();

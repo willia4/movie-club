@@ -2,6 +2,8 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Options;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Formats.Jpeg;
 using Tavis.UriTemplates;
 using zinfandel_movie_club.Config;
 
@@ -17,7 +19,6 @@ public record ImageBlob(string StorageAccountName, string BlobId);
 
 public class ImageManager : IImageManager
 {
-
     private readonly BlobContainerClient _client;
     
     public ImageManager(IOptions<DatabaseConfig> databaseConfig)
@@ -86,8 +87,8 @@ public class ImageManager : IImageManager
             .Select(async t =>
             {
                 var (size, img) = t;
-                var blobName = $"{blobPrefix}/{size.FileName}.png";
-                var blobBytes = img.ToPngImmutableByteArray();
+                var blobName = $"{blobPrefix}/{size.FileName}.jpg";
+                var blobBytes = img.ToJpegImmutableByteArray();
 
                 var metadata_ =
                     metadata.ToImmutableDictionary()
@@ -97,7 +98,7 @@ public class ImageManager : IImageManager
 
                 var uploadResult = await UploadBlob(
                     blobName: blobName,
-                    contentType: "image/png",
+                    contentType: "image/jpeg",
                     metadata: metadata_,
                     data: blobBytes,
                     cancellationToken: cancellationToken);
