@@ -189,13 +189,13 @@
 
                 const res = await fetch(url, {
                     method: form.method,
-                    redirect: "manual",
+                    redirect: "follow",
                     body: new FormData(form)
                 });
                 console.log('Finished submitting form');
                 console.log(res);
 
-                if (res.type === 'opaqueredirect')
+                if (res.ok)
                 {
                     window.location = res.url;
                 }

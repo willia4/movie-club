@@ -14,7 +14,8 @@ public class ErrorModel : PageModel
     public string ErrorTitle { get; set; } = "";
     public string ErrorText { get; set; } = "";
     public Dictionary<string, string> ErrorProperties = new Dictionary<string, string>();
-    
+
+    public string? ErrorTypeName { get; set; } = null;
     public string? StackTrace { get; set; } = null;
     
     public string? RequestId { get; set; }
@@ -37,7 +38,12 @@ public class ErrorModel : PageModel
         RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
         var exceptionFeature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
         var exception = exceptionFeature?.Error;
-        
+
+        if (exception is ExceptionResultException { InnerException: {} inner })
+        {
+            exception = inner;
+        }
+            
         (var statusCode, ErrorText, ErrorTitle) = exception switch
         {
             Exceptions.HttpException { Message: var msg, StatusCode: var exStatusCode, Title: var exTitle } => 
@@ -68,6 +74,7 @@ public class ErrorModel : PageModel
             if (_environment.IsDevelopment())
             {
                 ErrorProperties = errorProperties;
+                ErrorTypeName = exception.GetType().Name;
                 
                 if (exception.StackTrace is string stackTrace)
                 {

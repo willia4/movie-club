@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Net;
 using System.Text.Json.Serialization;
 
 namespace zinfandel_movie_club.Data.Models;
@@ -36,7 +37,24 @@ public class MovieDocument : CosmosDocument
     public int? RuntimeMinutes { get; init; }
     public string? ReleaseDate { get; init; }
     public string? TmdbId { get; init; }
+    public string? CoverImageTimeStamp { get; init; }
     public string? CoverImageBlobPrefix { get; init; }
     public Dictionary<string, string> CoverImagesBySize { get; init; } = new();
     public Dictionary<string, decimal> UserRatings = new();
+
+    public string SlugId()
+    {
+        var spaces = new System.Text.RegularExpressions.Regex("\\s+");
+        var title = WebUtility.UrlEncode(spaces.Replace(Title, "-").ToLowerInvariant());
+        
+        // assume that the id won't contain hyphens because it's not in the id generator alphabet
+        return $"{id}-{title}";
+    }
+
+    public static string IdFromSlugId(string slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug)) return "";
+        var firstHyphen = slug.IndexOf("-", StringComparison.OrdinalIgnoreCase);
+        return firstHyphen >= 0 ? slug.Substring(0, firstHyphen).Trim() : slug.Trim();
+    }
 }

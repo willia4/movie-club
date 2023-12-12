@@ -154,7 +154,15 @@ public class ErrorResultException<T, E> : Exception
     }
 }
 
-public class ExceptionResultException<T, E> : Exception
+public class ExceptionResultException : Exception
+{
+    protected ExceptionResultException(string message, Exception inner) : base(message, inner)
+    {
+        
+    }
+}
+
+public class ExceptionResultException<T, E> : ExceptionResultException
 {
     public E Error { get; init; }
     public ExceptionResultException(ErrorResult<T, E> res, Exception ex) : base(ex.Message, ex)

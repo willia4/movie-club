@@ -119,6 +119,7 @@ public class Add : PageModel
             RuntimeMinutes = RuntimeMinutes,
             ReleaseDate = s(ReleaseDate),
             TmdbId = s(TmdbId),
+            CoverImageTimeStamp = string.IsNullOrWhiteSpace(coverImagePrefix) ? null : DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), 
             CoverImageBlobPrefix = s(coverImagePrefix),
             CoverImagesBySize = (coverImageBlobsBySize ?? Enumerable.Empty<(ImageSize, string)>())
                 .ToDictionary(t => t.First().FileName, t => t.Second())
@@ -126,9 +127,8 @@ public class Add : PageModel
 
         var redirectId =
             (await _dataManager.UpsertDocument(newMovie, cancellationToken))
-            .Match(x => x.id);
+            .Match(x => x.SlugId());
         
-        return new RedirectToPageResult("Add");
-        
+        return new RedirectToPageResult("View/Index", new { id = redirectId});
     }
 }

@@ -9,9 +9,13 @@ public interface IIdGenerator
 
 public class IdGenerator : IIdGenerator
 {
-    // https://github.com/CyberAP/nanoid-dictionary/blob/master/src/nolookalikes-safe.js
-    private const string Alphabet = "6789BCDFGHJKLMNPQRTWbcdfghjkmnpqrtwz";
-    private const int NanoIdLength = 15;
+    // https://github.com/CyberAP/nanoid-dictionary/blob/master/src/nolookalikes-safe.js but all lowercase
+    // we need lowercase ids because we have "options.LowercaseUrls" enabled and it can't tell the difference
+    // between razor page names in the routes and ids in the routes. 
+    //
+    // see https://zelark.github.io/nano-id-cc/ for probability calculations
+    private const string Alphabet = "26789abcdfghijkmnpqrtwz";
+    private const int NanoIdLength = 17;
 
     private string GenerateId(string code) =>
         (code.Length == 3)

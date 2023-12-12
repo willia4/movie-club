@@ -44,7 +44,7 @@ public class ImageManager : IImageManager
             {
                 ContentType = contentType,
 
-                CacheControl = properties.Value.CacheControl,
+                CacheControl = $"max-age={TimeSpan.FromHours(5).TotalSeconds}",
                 ContentDisposition = properties.Value.ContentDisposition,
                 ContentEncoding = properties.Value.ContentEncoding,
                 ContentHash = properties.Value.ContentHash

@@ -1,11 +1,14 @@
+using System.Net;
 using Microsoft.Azure.Cosmos;
 using zinfandel_movie_club.Data.Models;
+using zinfandel_movie_club.Exceptions;
 
 namespace zinfandel_movie_club.Data;
 
 public interface ICosmosDocumentManager<DocumentT>
 {
     public Task<Result<DocumentT, Exception>> UpsertDocument(DocumentT doc, CancellationToken cancellationToken);
+    public Task<Result<DocumentT, Exception>> GetDocumentById(string id, CancellationToken cancellationToken);
 }
 
 public class CosmosDocumentManager<DocumentT> : ICosmosDocumentManager<DocumentT> where DocumentT : CosmosDocument
@@ -61,7 +64,7 @@ public class CosmosDocumentManager<DocumentT> : ICosmosDocumentManager<DocumentT
     {
         if (doc.id is null || string.IsNullOrWhiteSpace(doc.id))
         {
-            throw new System.ArgumentException($"{nameof(doc)} cannot be null or empty", nameof(doc));
+            throw new System.ArgumentException($"{nameof(doc)}.id cannot be null or empty", nameof(doc));
         }
 
         try
@@ -74,6 +77,34 @@ public class CosmosDocumentManager<DocumentT> : ICosmosDocumentManager<DocumentT
             }
 
             return Result<DocumentT, Exception>.Error($"Did not get a valid response from Cosmos: {res?.StatusCode}".ToException());
+        }
+        catch (Exception outer)
+        {
+            return Result<DocumentT, Exception>.Error(outer);
+        }
+    }
+
+    public async Task<Result<DocumentT, Exception>> GetDocumentById(string id, CancellationToken cancellationToken)
+    {
+        if (id is null || string.IsNullOrWhiteSpace(id))
+        {
+            throw new System.ArgumentException($"{nameof(id)} cannot be null or empty", nameof(id));
+        }
+
+        try
+        {
+            var container = await GetContainer(cancellationToken);
+            var r = await container.ReadItemAsync<DocumentT>(id, _partitionKeyMaker(id), cancellationToken: cancellationToken);
+
+            return r?.Resource switch
+            {
+                null => Result<DocumentT, Exception>.Error(new NotFoundException()),
+                var value => Result<DocumentT, Exception>.Ok(value)
+            };
+        }
+        catch (CosmosException notFound) when (notFound.StatusCode == HttpStatusCode.NotFound)
+        {
+            return Result<DocumentT, Exception>.Error(new NotFoundException($"Could not find document with id \"{id}\"", notFound));
         }
         catch (Exception outer)
         {

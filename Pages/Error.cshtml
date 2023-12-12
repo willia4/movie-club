@@ -19,6 +19,13 @@
     </p>
 }
 
+@if (Model.ErrorTypeName != null)
+{
+    <div class="exception-info">
+        <strong>Exception Type: </strong> @Model.ErrorTypeName
+    </div>
+}
+
 @if (Model.ErrorProperties.Count > 0)
 {
     <div class="properties">
