@@ -7,6 +7,7 @@ using NanoidDotNet;
 using Tavis.UriTemplates;
 using zinfandel_movie_club.Data;
 using zinfandel_movie_club.Data.Models;
+using zinfandel_movie_club.Exceptions;
 
 namespace zinfandel_movie_club.Pages.Movies;
 
@@ -74,6 +75,11 @@ public class Add : PageModel
     }
     public async Task<IActionResult> OnPost(CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(Title))
+        {
+            throw new BadRequestException("Title is required");
+        }
+
         var newId = _movieId.NewId();
         cancellationToken.ThrowIfCancellationRequested();
 

@@ -25,6 +25,8 @@
     const searchButton = document.getElementById("search-button");
     const cancelButton = document.getElementById("search-cancel");
     const addForm = document.getElementById("add-form");
+    const addFormFieldSet = document.querySelector("#add-form fieldset");
+    const addFormSubmitButton = document.querySelector("#add-form .add-form-submit-button");
     
     const coverImageFileInput = document.getElementById("uploaded-file");
     const coverImageContainer = document.querySelector('.cover-image-container');
@@ -184,13 +186,27 @@
                     return;
                 }
                 
+                // don't disable the form until we've gotten the form data. For some reason, disabling 
+                // the form means that those values are all empty
+                const formBody = new FormData(form);
+                
+                if (addFormSubmitButton)
+                {
+                    addFormSubmitButton.classList.remove("not-loading");
+                    addFormSubmitButton.classList.add("loading");
+
+                    searchBoxInput.disabled = true;
+                    searchButton.disabled = true;
+                    addFormFieldSet.disabled = true;
+                }
+
                 console.log('Submitting form');
                 const url = new URL(form.action);
 
                 const res = await fetch(url, {
                     method: form.method,
                     redirect: "follow",
-                    body: new FormData(form)
+                    body: formBody
                 });
                 console.log('Finished submitting form');
                 console.log(res);
@@ -198,6 +214,16 @@
                 if (res.ok)
                 {
                     window.location = res.url;
+                }
+                else
+                {
+                    alert("Unexpected error submitting form: " + (await res.text()) + "\n\nthe console may have more details");
+                    addFormSubmitButton.classList.add("not-loading");
+                    addFormSubmitButton.classList.remove("loading");
+
+                    searchBoxInput.disabled = false;
+                    searchButton.disabled = false;
+                    addFormFieldSet.disabled = false;
                 }
             });
         }

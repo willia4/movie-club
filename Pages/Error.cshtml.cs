@@ -31,7 +31,7 @@ public class ErrorModel : PageModel
         _environment = environment;
     }
 
-    private void Process()
+    private IActionResult Process()
     {
         static string msgOrDefault(string m) => string.IsNullOrWhiteSpace(m) ? DefaultErrorMessage : m.Trim();
         
@@ -50,11 +50,6 @@ public class ErrorModel : PageModel
                 ((int)exStatusCode, msgOrDefault(msg), $"{(int)exStatusCode} - {exTitle}"),
             _ => (500, DefaultErrorMessage, $"500 - Internal Server Error")
         };
-
-        if (!HttpContext.Response.HasStarted)
-        {
-            HttpContext.Response.StatusCode = statusCode;
-        }
 
         var errorProperties = new Dictionary<string, string>();
         if (exception is not null)
@@ -86,10 +81,25 @@ public class ErrorModel : PageModel
         var propertiesString = string.Join(" ", errorProperties.Select(kvp => $"{kvp.Key}=\"{kvp.Value}\""));
         
         _logger.LogError(exception, "Request Id: {requestId}, Message: {message}, Path: {path}, Properties: {properties}", RequestId, exception?.Message, exceptionFeature?.Path, propertiesString);
+        
+        if (string.Equals(Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
+        {
+            return new PageResult
+            {
+                StatusCode = statusCode
+            };
+        }
+
+        return new ContentResult()
+        {
+            ContentType = "text/plain",
+            StatusCode = statusCode,
+            Content = ErrorText
+        };
     }
 
-    public void OnGet() => Process();
-    public void OnPost() => Process();
-    public void OnPut() => Process();
+    public IActionResult OnGet() => Process();
+    public IActionResult OnPost() => Process();
+    public IActionResult OnPut() => Process();
 }
 

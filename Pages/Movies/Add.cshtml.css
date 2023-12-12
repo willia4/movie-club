@@ -138,3 +138,19 @@ img.spinner {
 .cover-image-frame img {
     max-width: 200px;
 }
+
+.add-form-submit-button.not-loading .add-text {
+    display: inline;
+}
+
+.add-form-submit-button.not-loading .spinner-border {
+    display: none;
+}
+
+.add-form-submit-button.loading .add-text {
+    display: none;
+}
+
+.add-form-submit-button.loading .spinner-border {
+    display: inline-block;
+}
