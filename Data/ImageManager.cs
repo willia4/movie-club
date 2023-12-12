@@ -82,31 +82,44 @@ public class ImageManager : IImageManager
  
         var results = ImmutableList<(ImageSize, string)>.Empty;
 
-        foreach (var t in sizedImages)
-        {
-            var (size, img) = t;
-            var blobName = $"{blobPrefix}/{size.FileName}.png";
-            var blobBytes = img.ToPngImmutableByteArray();
-
-            var metadata_ =
-                metadata.ToImmutableDictionary()
-                    .SetItem("size", size.FileName);
-            
-            var uploadResult = await UploadBlob(
-                blobName: blobName,
-                contentType: "image/png",
-                metadata: metadata_,
-                data: blobBytes,
-                cancellationToken: cancellationToken);
-
-            if (uploadResult.IsError)
+        var tasks = sizedImages
+            .Select(async t =>
             {
-                return uploadResult.ChangeResultTypeIfError<ImmutableList< (ImageSize, string)>>();
-            }
+                var (size, img) = t;
+                var blobName = $"{blobPrefix}/{size.FileName}.png";
+                var blobBytes = img.ToPngImmutableByteArray();
 
-            results = results.Add((size, blobName));
+                var metadata_ =
+                    metadata.ToImmutableDictionary()
+                        .SetItem("size", size.FileName)
+                        .SetItem("height", img.Height.ToString())
+                        .SetItem("width", img.Width.ToString());
+
+                var uploadResult = await UploadBlob(
+                    blobName: blobName,
+                    contentType: "image/png",
+                    metadata: metadata_,
+                    data: blobBytes,
+                    cancellationToken: cancellationToken);
+
+                if (uploadResult.IsError)
+                {
+                    return uploadResult.ChangeResultTypeIfError<(ImageSize, string)>();
+                }
+
+                return Result<(ImageSize, string), Exception>.Ok((size, blobName));
+            })
+            .ToArray();
+
+        var results_ = await Task.WhenAll(tasks);
+        var errors = results_.Where(r => r.IsError);
+        if (errors.Any())
+        {
+            return errors.First().ChangeResultTypeIfError<ImmutableList<(ImageSize, string)>>();
         }
-
-        return Result<ImmutableList< (ImageSize, string)>, Exception>.Ok(results);
+        
+        // we know there weren't errors because we'd have already returned
+        var collectedResults = results_.Select(r => r.Unwrap());
+        return Result<ImmutableList<(ImageSize, string)>, Exception>.Ok(collectedResults.ToImmutableList());
     }
 }

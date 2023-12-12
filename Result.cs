@@ -207,3 +207,16 @@ public static class TaskResultExtensions
         return await f(r.Unwrap());
     }
 }
+
+public static class ResultExtensions
+{
+    public static IEnumerable<T> SuccessValues<T, E>(this IEnumerable<Result<T, E>> results)
+    {
+        return results.Where(r => r.IsSuccess).Select(r => r.Unwrap());
+    }
+
+    public static IEnumerable<E> ErrorValues<T, E>(this IEnumerable<Result<T, E>> results)
+    {
+        return results.Where(r => r.IsError).Select(r => r.UnwrapError());
+    }
+}
