@@ -13,16 +13,4 @@ public static class UriExtensions
         if (lastDot >= path.Length - 1) return "";
         return path.Substring(lastDot + 1);
     }
-
-    public static T First<T, U>(this (T, U) t)
-    {
-        var (f, _) = t;
-        return f;
-    }
-    
-    public static U Second<T, U>(this (T, U) t)
-    {
-        var (_, s) = t;
-        return s;
-    }
 }

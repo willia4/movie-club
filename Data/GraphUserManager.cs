@@ -1,9 +1,11 @@
 ﻿using System.Runtime.CompilerServices;
 using Azure.Core;
 using Azure.Identity;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
+using zinfandel_movie_club.Authentication;
 using zinfandel_movie_club.Data.Models;
 
 namespace zinfandel_movie_club.Data;
@@ -27,6 +29,7 @@ public interface IGraphUserManager
     Task SetUserRole(IGraphUser user, string? newRole, CancellationToken cancellationToken);
     Task SetUserDisplayName(IGraphUser user, string? newDisplayName, CancellationToken cancellationToken);
     Task<string?> GetUserRole(string id, CancellationToken cancellationToken);
+    Task<IEnumerable<IGraphUser>> GetMembersAsync(CancellationToken cancellationToken);
 }
 
 public class GraphUserManager : IGraphUserManager
@@ -36,14 +39,20 @@ public class GraphUserManager : IGraphUserManager
     private readonly TokenCredential _graphCredential;
     private readonly GraphServiceClient _client;
     private readonly IUserProfileKeyValueStore _profileDataStore;
+    private readonly IUserRoleDecorator _userRoleDecorator;
     
-    public GraphUserManager(IUserProfileKeyValueStore profileDataStore, IOptions<Config.AppSettings> appSettings, IOptions<Config.GraphApi> graphApiConfig)
+    private readonly IMemoryCache _cache;
+    private const string MemberListCacheKey = $"{nameof(GraphUserManager)}-members";
+    
+    public GraphUserManager(IUserProfileKeyValueStore profileDataStore, IOptions<Config.AppSettings> appSettings, IOptions<Config.GraphApi> graphApiConfig, IMemoryCache cache, IUserRoleDecorator userRoleDecorator)
     {
         _profileDataStore = profileDataStore;
         _graphApiConfig = graphApiConfig.Value;
         _appSettings = appSettings.Value;
         _graphCredential = new ClientSecretCredential(tenantId: _graphApiConfig.TenantId, clientId: _graphApiConfig.ClientId, clientSecret: _graphApiConfig.ClientSecret);
         _client = new GraphServiceClient(_graphCredential, scopes: new string[] { "https://graph.microsoft.com/.default" });
+        _cache = cache;
+        _userRoleDecorator = userRoleDecorator;
     }
 
     
@@ -115,7 +124,6 @@ public class GraphUserManager : IGraphUserManager
 
     public async Task SetUserRole(IGraphUser user, string? newRole, CancellationToken cancellationToken)
     {
-        
         if (!(await GetAzureUserAsync(user.NameIdentifier, cancellationToken) is AzureUser azureUser))
         {
             throw new InvalidOperationException($"Could not find Azure user with id {user.NameIdentifier}");
@@ -123,7 +131,8 @@ public class GraphUserManager : IGraphUserManager
 
         var profileData = await _profileDataStore.GetDocument(azureUser.Id ?? "", () => CustomDefaultProfileDataDocumentForAzureUser(azureUser), cancellationToken);
         profileData.Role = (newRole ?? "").Trim();
-        
+
+        _cache.Remove(MemberListCacheKey);
         await _profileDataStore.UpsertDocument(user.NameIdentifier, profileData, cancellationToken);
     }
 
@@ -137,9 +146,23 @@ public class GraphUserManager : IGraphUserManager
         var profileData = await _profileDataStore.GetDocument(azureUser.Id ?? "", () => CustomDefaultProfileDataDocumentForAzureUser(azureUser), cancellationToken);
         profileData.DisplayName = (newDisplayName ?? "").Trim();
         
+        _cache.Remove(MemberListCacheKey);
         await _profileDataStore.UpsertDocument(user.NameIdentifier, profileData, cancellationToken);
     }
 
     public async Task<string?> GetUserRole(string id, CancellationToken cancellationToken) =>
         (await GetGraphUserAsync(id, cancellationToken))?.UserRole;
+
+    public async Task<IEnumerable<IGraphUser>> GetMembersAsync(CancellationToken cancellationToken)
+    {
+        return (await _cache.GetOrCreateAsync(MemberListCacheKey, async (entry) =>
+        {
+            var members = await
+                GetGraphUsersAsync(cancellationToken)
+                    .Where(_userRoleDecorator.IsMember, cancellationToken)
+                    .ToImmutableList(cancellationToken);
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
+            return members!;
+        }))!;
+    }
 }

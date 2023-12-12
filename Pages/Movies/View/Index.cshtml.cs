@@ -8,14 +8,18 @@ namespace zinfandel_movie_club.Pages.Movies.View;
 public class Index : PageModel
 {
     private readonly ICosmosDocumentManager<MovieDocument> _dataManager;
+    private readonly IGraphUserManager _userManager;
     
-    public Index(ICosmosDocumentManager<MovieDocument> dataManager)
+    public Index(ICosmosDocumentManager<MovieDocument> dataManager, IGraphUserManager userManager)
     {
         _dataManager = dataManager;
+        _userManager = userManager;
     }
     
     public string MovieTitle = "";
     public string Id = "";
+
+    public IEnumerable<IGraphUser> AllMembers = Enumerable.Empty<IGraphUser>();
     
     public async Task OnGet(string id, CancellationToken cancellationToken)
     {
@@ -25,6 +29,8 @@ public class Index : PageModel
             throw new BadRequestException("id cannot be empty");
         }
 
+        AllMembers = await _userManager.GetMembersAsync(cancellationToken);
+        
         var doc =
                 (await _dataManager.GetDocumentById(Id, cancellationToken))
                 .ValueOrThrow();

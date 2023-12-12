@@ -107,6 +107,7 @@ builder.Services.AddScoped<IIdGenerator, IdGenerator>();
 builder.Services.AddScoped<MovieIdGenerator>();
 builder.Services.AddScoped<UserIdGenerator>();
 
+builder.Services.AddSingleton<IUserRoleDecorator, UserRoleDecorator>();
 builder.Services.AddSingleton<IUserProfileKeyValueStore, UserProfileKeyValueStore>();
 builder.Services.AddSingleton<IGraphUserManager, GraphUserManager>();
 builder.Services.AddSingleton<ICosmosDocumentManager<zinfandel_movie_club.Data.Models.MovieDocument>>(sp =>

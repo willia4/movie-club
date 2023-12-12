@@ -168,7 +168,8 @@ public class DefaultingCosmosKeyValueStore<DocumentT> : DefaultingKeyVaultStore<
         var seenIds = new HashSet<string>();
         var container = await GetContainer(cancellationToken);
 
-        var q = container.GetItemLinqQueryable<DocumentT>();
+        var q = container.GetItemLinqQueryable<DocumentT>()
+            .Where(doc => doc.DocumentType == _documentType);
         var iterator = q.ToFeedIterator();
 
         while (iterator.HasMoreResults)

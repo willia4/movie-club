@@ -4,6 +4,12 @@ namespace zinfandel_movie_club;
 
 public static class AuthenticationExtensions
 {
+    public const string UserRoleClaimType = "x-club-role";
+    public const string UserIsSuperUserClaimType = "x-is-superuser";
+    public const string UserIsAdminClaimType = "x-is-admin";
+    public const string UserIsMemberClaimType = "x-is-member";
+    public const string DisplayNameClaimType = "x-display-name";
+    
     private static IEnumerable<Claim> SafeClaims(this ClaimsPrincipal claimsPrincipal) =>
         claimsPrincipal switch
         {

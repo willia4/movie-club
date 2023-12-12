@@ -13,43 +13,29 @@ public class ClaimRoleDecoratorMiddleware : IMiddleware
     public const string DisplayNameClaimType = "x-display-name";
     
     private readonly IGraphUserManager _userManager;
-    private readonly ISuperUserIdentifier _superUserIdentifier;
+    private readonly IUserRoleDecorator _roleDecorator;
     
-    public ClaimRoleDecoratorMiddleware(IGraphUserManager userManager, ISuperUserIdentifier superUserIdentifier)
+    public ClaimRoleDecoratorMiddleware(IGraphUserManager userManager, IUserRoleDecorator roleDecorator)
     {
         _userManager = userManager;
-        _superUserIdentifier = superUserIdentifier;
+        _roleDecorator = roleDecorator;
     }
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         if (context.User is ClaimsPrincipal { Identity: IIdentity { IsAuthenticated: true} } p && 
-            p.NameIdentifier() is string id)
+            p.NameIdentifier() is { } id)
         {
-            var isSuperUser = _superUserIdentifier.UserIsSuperuser(id);
-
             var graphUser = await TimeSpan.FromSeconds(10).WithTimeoutAsync(async token =>
                 await _userManager.GetGraphUserAsync(id, token));
-            
-            var userRole =
-                isSuperUser 
-                    ? AuthenticationExtensions.AdminRole
-                    : graphUser?.UserRole;
-            
-            var newClaims = new List<Claim>();
-            if (userRole != null)
-            {
-                newClaims.Add(new Claim(UserRoleClaimType, userRole));
-            }
-            
-            var isAdmin = string.Equals(AuthenticationExtensions.AdminRole, userRole, StringComparison.InvariantCultureIgnoreCase);
-            var isMember = isAdmin || string.Equals(AuthenticationExtensions.MemberRole, userRole, StringComparison.InvariantCultureIgnoreCase);
-            
-            newClaims.Add(new Claim(UserIsSuperUserClaimType, isSuperUser ? "true" : "false"));
-            newClaims.Add(new Claim(UserIsAdminClaimType, isAdmin ? "true" : "false"));
-            newClaims.Add(new Claim(UserIsMemberClaimType, isMember ? "true" : "false"));
 
-            newClaims.Add(new Claim(DisplayNameClaimType, graphUser?.DisplayName ?? ""));
+            var newClaims = Enumerable.Empty<Claim>();
+            if (graphUser != null)
+            {
+                newClaims = newClaims.AppendRange(_roleDecorator.RoleClaims(graphUser));
+            }
+
+            newClaims = newClaims.Append(new Claim(DisplayNameClaimType, graphUser?.DisplayName ?? ""));
 
             context.User.AddIdentity(new ClaimsIdentity(newClaims));
         }

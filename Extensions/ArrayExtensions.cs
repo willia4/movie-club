@@ -15,4 +15,10 @@ public static class IEnumerableExtensions
     {
         return items.ToDictionary(t => t.First(), t => t.Second()).ToImmutableDictionary();
     }
+
+    public static IEnumerable<T> AppendRange<T>(this IEnumerable<T> first, IEnumerable<T> second)
+    {
+        foreach (var item in first) yield return item;
+        foreach (var item in second) yield return item;
+    }
 }
