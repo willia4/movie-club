@@ -47,6 +47,8 @@ builder.Services
     })
     .AddMicrosoftIdentityUI();
 
+builder.Services.AddSingleton<ICoverImageProvider, CoverImageProvider>();
+
 builder.Services.AddSingleton<ISuperUserIdentifier, SuperUserIdentifier>();
 builder.Services.AddSingleton<IAuthorizationHandler, AdminAuthorizationPolicy>();
 builder.Services.AddSingleton<IAuthorizationHandler, MemberAuthorizationPolicy>();
@@ -188,7 +190,7 @@ var csp = new Lazy<string>(() =>
     var csp = "default-src 'self'; " +
                        "script-src 'self' p.typekit.net use.typekit.net; " +
                        "style-src 'self' 'unsafe-inline' p.typekit.net use.typekit.net cdn.jsdelivr.net data:; " +
-                       "img-src 'self' p.typekit.net use.typekit.net cdn.jsdelivr.net image.tmdb.org data:; " +
+                       "img-src 'self' p.typekit.net use.typekit.net cdn.jsdelivr.net image.tmdb.org partypartymovieclub.blob.core.windows.net data:; " +
                        "font-src 'self' p.typekit.net use.typekit.net cdn.jsdelivr.net data:; " +
                        $"connect-src 'self' performance.typekit.net {instance.Host} {domain}";
     return csp;

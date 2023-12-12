@@ -7,4 +7,9 @@
 
 <div>
     <h1>@Model.MovieTitle</h1>
+    
+    @if (!string.IsNullOrWhiteSpace(Model.CoverImageHref))
+    {
+        <img src="@Model.CoverImageHref" alt="movie cover"/>    
+    }
 </div>

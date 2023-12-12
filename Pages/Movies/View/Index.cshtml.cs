@@ -9,16 +9,19 @@ public class Index : PageModel
 {
     private readonly ICosmosDocumentManager<MovieDocument> _dataManager;
     private readonly IGraphUserManager _userManager;
+    private readonly ICoverImageProvider _coverImageProvider;
     
-    public Index(ICosmosDocumentManager<MovieDocument> dataManager, IGraphUserManager userManager)
+    public Index(ICosmosDocumentManager<MovieDocument> dataManager, IGraphUserManager userManager, ICoverImageProvider coverImageProvider)
     {
         _dataManager = dataManager;
         _userManager = userManager;
+        _coverImageProvider = coverImageProvider;
     }
     
     public string MovieTitle = "";
     public string Id = "";
-
+    public string CoverImageHref = "";
+    
     public IEnumerable<IGraphUser> AllMembers = Enumerable.Empty<IGraphUser>();
     
     public async Task OnGet(string id, CancellationToken cancellationToken)
@@ -36,5 +39,6 @@ public class Index : PageModel
                 .ValueOrThrow();
         
         MovieTitle = doc.Title;
+        CoverImageHref = _coverImageProvider.CoverImageUri(doc, ImageSize.Size256).ToString();
     }
 }
