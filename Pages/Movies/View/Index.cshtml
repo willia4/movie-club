@@ -5,42 +5,86 @@
     ViewData["Title"] = Model.MovieTitle;
 }
 
-@* <div class="container"> *@
-    <div class="row">
-        <div class="col-md-5 col-5">
-            <img class="img-fluid" src="@Model.CoverImageHref" alt="movie cover"/>    
-        </div>
-        <div class="col">
-            <dl class="row">
-                <dt class="col-sm-4 col-md-3 col-lg-2">Watched</dt>
-                <dd class="col-sm-8 col-md-9 col-lg-10">@if (Model.WatchedDate.HasValue)
-                                {
-                                    <span>@Model.WatchedDate.Value</span>
-                                }
-                                else
-                                {
-                                    <span>Not Watched</span>
-                                }
-                </dd>
 
-            </dl>
-            <p class="overview">
-                @Model.Overview    
-            </p>
-
-            <dl class="row">
-                @if (!string.IsNullOrWhiteSpace(Model.ReleaseDate))
-                {
-                    <dt class="col-sm-4 col-md-3 col-lg-2">Released</dt>
-                    <dd class="col-sm-8 col-md-9 col-lg-10"><span>@Model.ReleaseDate</span></dd>
-                }
-                
-                @if (@Model.RuntimeMinutes.HasValue)
-                {
-                    <dt class="col-sm-4 col-md-3 col-lg-2">Runtime</dt>
-                    <dd class="col-sm-8 col-md-9 col-lg-10"><span>@Model.RuntimeMinutes minutes</span></dd>
-                }
-            </dl>
-        </div>
+<div class="row">
+    <div class="col-md-5 col-5">
+        <img class="img-fluid" src="@Model.CoverImageHref" alt="movie cover"/>    
     </div>
-@* </div> *@
+    <div class="col">
+        <dl class="row">
+            <dt class="col-sm-4 col-md-3 col-lg-2">Watched</dt>
+            <dd class="col-sm-8 col-md-9 col-lg-10">@if (Model.WatchedDate.HasValue)
+                                                    {
+                                                        <span>@Model.WatchedDate.Value</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>Not Watched</span>
+                                                    }
+            </dd>
+
+        </dl>
+        <p class="overview">
+            @Model.Overview    
+        </p>
+
+        <dl class="row">
+            @if (!string.IsNullOrWhiteSpace(Model.ReleaseDate))
+            {
+                <dt class="col-sm-4 col-md-3 col-lg-2">Released</dt>
+                <dd class="col-sm-8 col-md-9 col-lg-10"><span>@Model.ReleaseDate</span></dd>
+            }
+                
+            @if (@Model.RuntimeMinutes.HasValue)
+            {
+                <dt class="col-sm-4 col-md-3 col-lg-2">Runtime</dt>
+                <dd class="col-sm-8 col-md-9 col-lg-10"><span>@Model.RuntimeMinutes minutes</span></dd>
+            }
+        </dl>
+    </div>
+</div>
+<div class="row mt-2">
+    @if (!string.IsNullOrWhiteSpace(Model.TmdbWatchPageHref))
+    {
+        <div class="col-xs-12 col-sm-6 col-md-5 col-lg-4">
+            <div class="watch-providers">
+                <div class="watch-providers-title"><a href="@Model.TmdbWatchPageHref">Just Watch</a></div>
+                @foreach (var (logoUri, name) in @Model.WatchProviders)
+                {
+                    <div class="watch-provider-logo">
+                        <img src="@logoUri" alt="@name"/>
+                    </div>
+                }
+            </div>
+        </div>        
+    }
+    
+    <div class="col">
+        @if (!string.IsNullOrWhiteSpace(Model.TmdbId))
+        {
+            <div class="row">
+                <a class="tmdb-link" href="https://www.themoviedb.org/movie/@Model.TmdbId">View on TMDB</a>
+            </div>            
+        }
+        
+        <dl class="row">
+            @if (Model.CriticScore.HasValue)
+            {
+                <dt class="col-sm-7 col-md-5 col-lg-4">Critic Rating</dt>
+                <dd class="col-sm-5 col-md-7 col-lg-8"><span>@Model.CriticScore.Value.ToString("N2")</span></dd>
+            }
+
+            @if (Model.UserScore.HasValue)
+            {
+                <dt class="col-sm-7 col-md-5 col-lg-4">User Rating</dt>
+                <dd class="col-sm-5 col-md-7 col-lg-8"><span>@Model.UserScore.Value.ToString("N2")</span></dd>
+            }
+            
+            @if (Model.TmdbScore.HasValue)
+            {
+                <dt class="col-sm-7 col-md-5 col-lg-4">TMDB Rating</dt>
+                <dd class="col-sm-5 col-md-7 col-lg-8"><span>@Model.TmdbScore.Value.ToString("N2")</span></dd>
+            }
+        </dl>
+    </div>
+</div>

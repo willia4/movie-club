@@ -13,6 +13,7 @@ public interface IMovieDatabase
 {
     public IAsyncEnumerable<Models.MovieSearchResult> Search(string searchText, CancellationToken cancellationToken);
     public Task<MovieDetailResult?> GetDetails(int id, CancellationToken cancellationToken);
+    public Task<MovieStreamingProviderResult> GetWatchProviders(int movieId, CancellationToken cancellationToken);
 }
 
 public enum BackdropSize
@@ -113,7 +114,8 @@ public class TheMovieDatabase : IMovieDatabase
             : $"https://image.tmdb.org/t/p/w1280/{details.BackdropPath}";
 
         return new MovieDetailResult(Id: details.Id, Title: details.Title, Overview: details.Overview,
-            PosterHref: posterHref, BackdropHref: backdropHref, ReleaseDate: details.ReleaseDate, RuntimeMinutes: details.RuntimeMinutes);
+            PosterHref: posterHref, BackdropHref: backdropHref, ReleaseDate: details.ReleaseDate, RuntimeMinutes: details.RuntimeMinutes,
+            Rating: details.Rating);
     }
 
     public async IAsyncEnumerable<Models.MovieSearchResult> Search(string searchText, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -166,6 +168,51 @@ public class TheMovieDatabase : IMovieDatabase
         }
     }
 
+    public async Task<MovieStreamingProviderResult> GetWatchProviders(int movieId, CancellationToken cancellationToken)
+    {
+        // https://developer.themoviedb.org/reference/movie-watch-providers
+        var allowedProviderIds = new int[]
+        {
+            8, // Netflix
+            9, // Amazon Prime
+            337, // Disney Plus
+            9, // Apple TV Plus
+            2, // Apple TV
+            15, // Hulu
+            384, // HBO Max
+            1899, // Max
+            386, // Peacock
+            387, // Peacock Premium
+            87, // Acorn
+            151 // BritBox
+        };
+        
+        var req = CreateRequest($"/3/movie/{movieId}/watch/providers");
+        using var client = _clientFactory.CreateClient();
+        var res = await client.SendAsync(req, cancellationToken);
+
+        var body = await res.Content.ReadAsStringAsync(cancellationToken);
+        var results = System.Text.Json.JsonSerializer.Deserialize<TmdbWatchProvidersResponse>(body)!;
+
+        if (res.IsSuccessStatusCode && results?.Results?.UnitedStates is { } us)
+        {
+            static Uri MakeLogoUri(string logoPath)
+            {
+                return new Uri($"https://image.tmdb.org/t/p/original{logoPath}");
+            }
+            
+            var providers =
+                us.StreamingProviders
+                    .Where(p => allowedProviderIds.Contains(p.Id))
+                    .OrderBy(p => p.DisplayPriority)
+                    .Select(p => new MovieStreamingProvider(p.Name, MakeLogoUri(p.LogoPath)))
+                    .ToImmutableList();
+
+            return new MovieStreamingProviderResult(results.Id, new Uri(us.Link), providers);
+        }
+        return new MovieStreamingProviderResult(movieId, null, ImmutableList<MovieStreamingProvider>.Empty);
+    }
+    
     private class TmdbSearchResponseMovie
     {
         [JsonPropertyName("id")] public int Id { get; set; }
@@ -204,5 +251,31 @@ public class TheMovieDatabase : IMovieDatabase
         [JsonPropertyName("backdrop_path")] public string BackdropPath { get; set; } = "";
         [JsonPropertyName("release_date")] public string ReleaseDate { get; set; } = "";
         [JsonPropertyName("runtime")] public int RuntimeMinutes { get; set; }
+        [JsonPropertyName("vote_average")] public decimal Rating { get; set; } = 0.0M;
+    }
+
+    private class TmdbWatchProvidersResponse
+    {
+        [JsonPropertyName("id")] public int Id { get; set; }
+        [JsonPropertyName("results")] public TmdbWatchProvidersResponseResults Results { get; set; } 
+    }
+
+    private class TmdbWatchProvidersResponseResults
+    {
+        [JsonPropertyName("US")] public TmdbWatchProviderRegion? UnitedStates { get; set; }
+    }
+
+    private class TmdbWatchProviderRegion
+    {
+        [JsonPropertyName("link")] public string Link { get; set; }
+        [JsonPropertyName("flatrate")] public List<TmdbWatchProvider> StreamingProviders { get; set; } = new();
+    }
+
+    private class TmdbWatchProvider
+    {
+        [JsonPropertyName("provider_id")] public int Id { get; set; }
+        [JsonPropertyName("logo_path")] public string LogoPath { get; set; }
+        [JsonPropertyName("display_priority")] public int DisplayPriority { get; set; }
+        [JsonPropertyName("provider_name")] public string Name { get; set; }
     }
 }

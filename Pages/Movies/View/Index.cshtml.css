@@ -1,0 +1,36 @@
+﻿.watch-providers {
+    display: flex;
+    flex-wrap: wrap;
+    border: solid 1px black;
+    min-height: 200px;
+    padding: 15px;
+    justify-content: center;
+    background-color: var(--bright-background-color);
+    column-gap: 10px;
+}
+
+.watch-providers .watch-providers-title
+{
+    width: 100%;
+    font-family: var(--header-menu-font);
+    font-size: 225%;
+    text-align: center;
+    color: var(--alternate-bright-color);
+}
+
+.watch-providers .watch-providers-title a {
+    color: var(--alternate-bright-color);
+    text-decoration: none;
+}
+
+.watch-providers div.watch-provider-logo {
+    display: inline-block;
+}
+
+.watch-providers div.watch-provider-logo img {
+    width: 64px;
+}
+
+.tmdb-link a {
+    color: var(--bright-background-color);
+}
