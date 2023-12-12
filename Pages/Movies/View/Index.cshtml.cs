@@ -18,9 +18,19 @@ public class Index : PageModel
         _coverImageProvider = coverImageProvider;
     }
     
-    public string MovieTitle = "";
     public string Id = "";
     public string CoverImageHref = "";
+    
+    public string MovieTitle = "";
+    public string Overview = "";
+    
+    public DateOnly? WatchedDate = null;
+    public decimal? CriticScore = null;
+    public decimal? UserScore = null;
+    public int? RuntimeMinutes = null;
+    public string? ReleaseDate = null;
+
+    public string TmdbId = "";
     
     public IEnumerable<IGraphUser> AllMembers = Enumerable.Empty<IGraphUser>();
     
@@ -39,6 +49,15 @@ public class Index : PageModel
                 .ValueOrThrow();
         
         MovieTitle = doc.Title;
-        CoverImageHref = _coverImageProvider.CoverImageUri(doc, ImageSize.Size256).ToString();
+        Overview = doc.Overview ?? "";
+        
+        WatchedDate = doc.MostRecentWatchedDate();
+        CriticScore = doc.RottenTomatoesCriticScore;
+        UserScore = doc.RottenTomatoesUserScore;
+        RuntimeMinutes = doc.RuntimeMinutes;
+        ReleaseDate = doc.ReleaseDate;
+        TmdbId = doc.TmdbId ?? "";
+        
+        CoverImageHref = _coverImageProvider.CoverImageUri(doc, ImageSize.Size512).ToString();
     }
 }

@@ -5,11 +5,42 @@
     ViewData["Title"] = Model.MovieTitle;
 }
 
-<div>
-    <h1>@Model.MovieTitle</h1>
-    
-    @if (!string.IsNullOrWhiteSpace(Model.CoverImageHref))
-    {
-        <img src="@Model.CoverImageHref" alt="movie cover"/>    
-    }
-</div>
+@* <div class="container"> *@
+    <div class="row">
+        <div class="col-md-5 col-5">
+            <img class="img-fluid" src="@Model.CoverImageHref" alt="movie cover"/>    
+        </div>
+        <div class="col">
+            <dl class="row">
+                <dt class="col-sm-4 col-md-3 col-lg-2">Watched</dt>
+                <dd class="col-sm-8 col-md-9 col-lg-10">@if (Model.WatchedDate.HasValue)
+                                {
+                                    <span>@Model.WatchedDate.Value</span>
+                                }
+                                else
+                                {
+                                    <span>Not Watched</span>
+                                }
+                </dd>
+
+            </dl>
+            <p class="overview">
+                @Model.Overview    
+            </p>
+
+            <dl class="row">
+                @if (!string.IsNullOrWhiteSpace(Model.ReleaseDate))
+                {
+                    <dt class="col-sm-4 col-md-3 col-lg-2">Released</dt>
+                    <dd class="col-sm-8 col-md-9 col-lg-10"><span>@Model.ReleaseDate</span></dd>
+                }
+                
+                @if (@Model.RuntimeMinutes.HasValue)
+                {
+                    <dt class="col-sm-4 col-md-3 col-lg-2">Runtime</dt>
+                    <dd class="col-sm-8 col-md-9 col-lg-10"><span>@Model.RuntimeMinutes minutes</span></dd>
+                }
+            </dl>
+        </div>
+    </div>
+@* </div> *@

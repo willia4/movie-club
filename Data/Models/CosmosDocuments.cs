@@ -39,6 +39,8 @@ public class MovieDocument : CosmosDocument
     public string? TmdbId { get; init; }
     public string? CoverImageTimeStamp { get; init; }
     public string? CoverImageBlobPrefix { get; init; }
+    public List<DateOnly> WatchedDates { get; init; } = new();
+    
     public Dictionary<string, string> CoverImagesBySize { get; init; } = new();
     public Dictionary<string, decimal> UserRatings = new();
 
@@ -56,5 +58,11 @@ public class MovieDocument : CosmosDocument
         if (string.IsNullOrWhiteSpace(slug)) return "";
         var firstHyphen = slug.IndexOf("-", StringComparison.OrdinalIgnoreCase);
         return firstHyphen >= 0 ? slug.Substring(0, firstHyphen).Trim() : slug.Trim();
+    }
+
+    public DateOnly? MostRecentWatchedDate()
+    {
+        var dates = WatchedDates.OrderByDescending(d => d);
+        return dates.Any() ? dates.First() : null;
     }
 }
