@@ -48,8 +48,9 @@ public class Index : PageModel
 
         var newRole = roleAction switch
         {
-            string s when s == "set" => AuthenticationExtensions.AdminRole,
-            string s when s == "clear" => null,
+            not null and "setAdmin" => AuthenticationExtensions.AdminRole,
+            not null and "setMember" => AuthenticationExtensions.MemberRole,
+            not null and "clear" => null,
             _ => throw new Exceptions.BadRequestParameterException(nameof(roleAction), $"Invalid role action: {roleAction}")
         };
         

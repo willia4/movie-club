@@ -24,7 +24,8 @@
             <th>Id</th>
             <th>Role</th>
             <th>Set Admin</th>
-            <th>Clear Admin</th>
+            <th>Set Member</th>
+            <th>Clear Role</th>
         </tr>
         @foreach (var user in Model.KnownUsers)
         {
@@ -37,7 +38,7 @@
                 <td>
                     <form method="post">
                         <input type="hidden" name="userId" value="@user.NameIdentifier"/>
-                        <input type="hidden" name="roleAction" value="set"/>
+                        <input type="hidden" name="roleAction" value="setAdmin"/>
                         <input type="submit" value="Set Admin"/>
                     </form>
                 </td>
@@ -45,8 +46,16 @@
                 <td>
                     <form method="post">
                         <input type="hidden" name="userId" value="@user.NameIdentifier"/>
+                        <input type="hidden" name="roleAction" value="setMember"/>
+                        <input type="submit" value="Set Member"/>
+                    </form>
+                </td>
+                
+                <td>
+                    <form method="post">
+                        <input type="hidden" name="userId" value="@user.NameIdentifier"/>
                         <input type="hidden" name="roleAction" value="clear"/>
-                        <input type="submit" value="Clear Admin"/>
+                        <input type="submit" value="Clear Role"/>
                     </form>
                 </td>
             </tr>
