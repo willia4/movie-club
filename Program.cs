@@ -216,5 +216,5 @@ app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapRazorPages();
-app.MapControllers(); // remove when we replace the Identity.Web.UI default account controller, if we haven't added controllers by then.
+app.MapControllers();
 app.Run();
