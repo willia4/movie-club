@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.Extensions.Caching.Memory;
@@ -18,9 +19,15 @@ public interface IGraphUser
     public string FirstName { get; }
     public string LastName { get; }
     public string UserRole { get; }
+    public string AADUserName { get;  }
+    public string? ProfileImageTimeStamp { get; }
+    public string? ProfileImageBlobPrefix { get; }
+    
+    public IDictionary<string, string> ProfileImagesBySize { get; }
 }
 
-public record GraphUser(string NameIdentifier, string DisplayName, string FirstName, string LastName, string UserRole) : IGraphUser;
+public record GraphUser(string NameIdentifier, string DisplayName, string FirstName, string LastName, string UserRole, string AADUserName,
+    string? ProfileImageTimeStamp, string? ProfileImageBlobPrefix, IDictionary<string, string> ProfileImagesBySize) : IGraphUser;
 
 public interface IGraphUserManager
 {
@@ -28,6 +35,7 @@ public interface IGraphUserManager
     Task<IGraphUser?> GetGraphUserAsync(string id, CancellationToken cancellationToken);
     Task SetUserRole(IGraphUser user, string? newRole, CancellationToken cancellationToken);
     Task SetUserDisplayName(IGraphUser user, string? newDisplayName, CancellationToken cancellationToken);
+    Task SetProfileImage(IGraphUser user, string BlobTimestamp, string BlobPrefix, IDictionary<string, string> imagesBySize, CancellationToken cancellationToken);
     Task<string?> GetUserRole(string id, CancellationToken cancellationToken);
     Task<IEnumerable<IGraphUser>> GetMembersAsync(CancellationToken cancellationToken);
 }
@@ -56,22 +64,40 @@ public class GraphUserManager : IGraphUserManager
     }
 
     
-    private GraphUser GraphUserFromAzureUser(AzureUser azureUser, IUserProfile profileData)
+    private GraphUser GraphUserFromAzureUser(AzureUser azureUser, UserProfileData profileData)
     {
         var userRole = (profileData.Role ?? "").Trim();
 
         var customDisplayName = (profileData.DisplayName ?? "").Trim();
         var displayName = string.IsNullOrWhiteSpace(customDisplayName) ? azureUser.DisplayName ?? "" : customDisplayName.Trim();
 
+        static string? s(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
+        
+        var email = azureUser.Mail ?? (azureUser.OtherMails ?? Enumerable.Empty<string>()).FirstOrDefault();
+        var aadDisplayName = azureUser.DisplayName;
+        var aadUserName = (s(email), s(aadDisplayName)) switch
+        {
+            (null, null) => "<none>",
+            ({} email_, {} displayName_) => $"{displayName_} <{email_}>",
+            ({} email_, _) => email_,
+            (_, {} displayName_) => displayName_
+        };
+
+
+
         return new GraphUser(
             NameIdentifier: azureUser.Id ?? "",
             DisplayName: displayName,
             FirstName: azureUser.GivenName ?? "",
             LastName: azureUser.Surname ?? "",
-            UserRole: userRole);   
+            UserRole: userRole,
+            AADUserName: aadUserName,
+            ProfileImageTimeStamp: profileData.ProfileImageTimeStamp,
+            ProfileImageBlobPrefix: profileData.ProfileImageBlobPrefix,
+            ProfileImagesBySize: profileData.ProfileImagesBySize.ToImmutableDictionary());
     }
     
-    private string[] UserSelectList => new string[] { "displayName", "id", "givenName", "surname" };
+    private string[] UserSelectList => new string[] { "displayName", "id", "givenName", "surname", "mail", "otherMails" };
     
     private Task<AzureUser?> GetAzureUserAsync(string id, CancellationToken cancellationToken) => _client.Users[id].GetAsync(req => {  req.QueryParameters.Select = UserSelectList; }, cancellationToken: cancellationToken);
     private UserProfileData CustomDefaultProfileDataDocumentForAzureUser(AzureUser azureUser) => new UserProfileData {id = azureUser.Id, DisplayName = azureUser.DisplayName, Role = ""};
@@ -150,6 +176,21 @@ public class GraphUserManager : IGraphUserManager
         await _profileDataStore.UpsertDocument(user.NameIdentifier, profileData, cancellationToken);
     }
 
+    public async Task SetProfileImage(IGraphUser user, string BlobTimestamp, string BlobPrefix, IDictionary<string, string> imagesBySize, CancellationToken cancellationToken)
+    {
+        if (!(await GetAzureUserAsync(user.NameIdentifier, cancellationToken) is AzureUser azureUser))
+        {
+            throw new InvalidOperationException($"Could not find Azure user with id {user.NameIdentifier}");
+        }
+
+        var profileData = await _profileDataStore.GetDocument(azureUser.Id ?? "", () => CustomDefaultProfileDataDocumentForAzureUser(azureUser), cancellationToken);
+        profileData.ProfileImageBlobPrefix = BlobPrefix;
+        profileData.ProfileImageTimeStamp = BlobTimestamp;
+        profileData.ProfileImagesBySize = imagesBySize.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        
+        _cache.Remove(MemberListCacheKey);
+        await _profileDataStore.UpsertDocument(user.NameIdentifier, profileData, cancellationToken);
+    }
     public async Task<string?> GetUserRole(string id, CancellationToken cancellationToken) =>
         (await GetGraphUserAsync(id, cancellationToken))?.UserRole;
 

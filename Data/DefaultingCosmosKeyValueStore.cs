@@ -27,6 +27,7 @@ public sealed class UserProfileKeyValueStore : DefaultingCosmosKeyValueStore<Use
             database: cosmosConfig.Database,
             container: cosmosConfig.Container,
             documentType: UserProfileData._DocumentType,
+            consistencyLevel: ConsistencyLevel.Strong,
             partitionKeyMaker: id => new PartitionKey(id),
             defaultDocumentGenerator: id => new UserProfileData { id = id, DisplayName = "", Role = "" })
     {
@@ -49,7 +50,7 @@ public class DefaultingCosmosKeyValueStore<DocumentT> : DefaultingKeyVaultStore<
 
     public bool WriteDefaultDocumentsBack { get; init; } = true;
     
-    public DefaultingCosmosKeyValueStore(string connectionString, string database, string container, string documentType, Func<string, PartitionKey> partitionKeyMaker, Func<string, DocumentT> defaultDocumentGenerator)
+    public DefaultingCosmosKeyValueStore(string connectionString, string database, string container, string documentType, Microsoft.Azure.Cosmos.ConsistencyLevel? consistencyLevel, Func<string, PartitionKey> partitionKeyMaker, Func<string, DocumentT> defaultDocumentGenerator)
     {
         _connectionString = connectionString;
         _database = database;
@@ -62,7 +63,7 @@ public class DefaultingCosmosKeyValueStore<DocumentT> : DefaultingKeyVaultStore<
         
         _cache = new PurgeableMemoryCache<string, DocumentT>();
         
-        _client = new CosmosClient(connectionString: _connectionString, clientOptions: new CosmosClientOptions() { Serializer = new CosmosSystemTextJsonSerializer() });
+        _client = new CosmosClient(connectionString: _connectionString, clientOptions: new CosmosClientOptions() { Serializer = new CosmosSystemTextJsonSerializer(), ConsistencyLevel = consistencyLevel});
     }
 
     private string IdPrefix => $"{_documentType}-";

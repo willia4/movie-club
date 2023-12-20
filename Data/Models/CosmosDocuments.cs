@@ -10,19 +10,17 @@ public abstract class CosmosDocument
     public abstract string? DocumentType { get; }
 }
 
-public interface IUserProfile
-{
-    public string? id { get; }
-    public string? DisplayName { get; }
-    public string? Role { get; } 
-}
-
-public class UserProfileData : CosmosDocument, IUserProfile
+public class UserProfileData : CosmosDocument
 {
     public static string _DocumentType => "UserProfile";
     public override string? DocumentType => _DocumentType;
     public string? DisplayName { get; set; }
     public string? Role { get; set; }
+    
+    public string? ProfileImageTimeStamp { get; set; }
+    public string? ProfileImageBlobPrefix { get; set; }
+    
+    public Dictionary<string, string> ProfileImagesBySize { get; set; } = new();
 }
 
 public class MovieDocument : CosmosDocument
@@ -30,18 +28,18 @@ public class MovieDocument : CosmosDocument
     public static string _DocumentType => "Movie";
     public override string DocumentType => _DocumentType;
 
-    public string Title { get; init; } = "";
-    public string? Overview { get; init; }
-    public decimal? RottenTomatoesCriticScore { get; init; }
-    public decimal? RottenTomatoesUserScore { get; init; }
-    public int? RuntimeMinutes { get; init; }
-    public string? ReleaseDate { get; init; }
-    public string? TmdbId { get; init; }
-    public string? CoverImageTimeStamp { get; init; }
-    public string? CoverImageBlobPrefix { get; init; }
-    public List<DateOnly> WatchedDates { get; init; } = new();
+    public string Title { get; set; } = "";
+    public string? Overview { get; set; }
+    public decimal? RottenTomatoesCriticScore { get; set; }
+    public decimal? RottenTomatoesUserScore { get; set; }
+    public int? RuntimeMinutes { get; set; }
+    public string? ReleaseDate { get; set; }
+    public string? TmdbId { get; set; }
+    public string? CoverImageTimeStamp { get; set; }
+    public string? CoverImageBlobPrefix { get; set; }
+    public List<DateOnly> WatchedDates { get; set; } = new();
     
-    public Dictionary<string, string> CoverImagesBySize { get; init; } = new();
+    public Dictionary<string, string> CoverImagesBySize { get; set; } = new();
     public Dictionary<string, decimal> UserRatings = new();
 
     public string SlugId()

@@ -1,31 +1,93 @@
 ﻿@page "{id=_self}"
 @model zinfandel_movie_club.Pages.Profile.Index
 
+@section scripts {
+    <script type="text/javascript" src="~/js/profile.js"></script>
+}
+
+@section styles {
+    <style>
+        input[type=file] {
+            color: transparent !important;
+        }
+    </style>
+}
+
 <div>
             @if (Model.CanEdit)
             {
-                <form method="post">
-                    <div class="mb-3">
-                        <label for="displayName" class="form-label">Display name</label>
-                        <input type="text" class="form-control" id="displayName" name="displayName" maxlength="100" width="50" value="@Model.DisplayName"/>
+                <form id="edit-form" method="post" enctype="multipart/form-data" novalidate>
+                    <div class="row">
+                        <div class="col-md-3 mb-0 sb-3">
+                            <div class="profile-image-container">
+                                <div class="profile-image-frame">
+                                    <img src="@Model.ProfileImageHref" class="img-fluid" alt="profile-picture"/>
+                                </div>
+                            </div>
+                            <p>
+                                <input type="file" class="form-control-file" id="uploaded-file" name="uploaded-file"/>
+                                <br><i class="square-images">(square images work best)</i>
+                            </p>
+                        </div>
+                        <div class="col">
+                            <div class="form-group mb-3">
+                                <label for="displayName" class="form-label">Display name</label>
+                                <input type="text" class="form-control" id="displayName" name="displayName" maxlength="100" width="50" value="@Model.DisplayName" required/>
+                                <div class="invalid-feedback">
+                                    Required
+                                </div>
+                                <div class="valid-feedback"></div>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="membershipRole" class="form-label">Role</label>
+                                <input type="text" class="form-control-plaintext" id="membershipRole" readonly placeholder="@Model.MemberRole"/>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="membershipRole" class="form-label">Role</label>
-                        <input type="text" class="form-control-plaintext" id="membershipRole" readonly placeholder="@Model.MemberRole"/>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Save</button>
+                    
                 </form>
             }
             else
             {
                 <form>
-                    <div class="mb-3">
-                        <label for="displayName" class="form-label">Display name</label>
-                        <input type="text" class="form-control-plaintext" id="displayName" name="displayName" readonly value="@Model.DisplayName"/>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="profile-image-container">
+                                <div class="profile-image-frame">
+                                    <img src="@Model.ProfileImageHref" class="img-fluid" alt="profile-picture"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="displayName" class="form-label">Display name</label>
+                                <input type="text" class="form-control-plaintext" id="displayName" name="displayName" readonly value="@Model.DisplayName"/>
+                            </div>
+                            <div class="mb-3">
+                                <label for="membershipRole" class="form-label">Role</label>
+                                <input type="text" class="form-control-plaintext" id="membershipRole" readonly placeholder="@Model.MemberRole"/>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="membershipRole" class="form-label">Role</label>
-                        <input type="text" class="form-control-plaintext" id="membershipRole" readonly placeholder="@Model.MemberRole"/>
+                </form>
+            }
+            
+            @if (Model.IsAdmin)
+            {
+                <form>
+                    <div class="row" style="margin-top: 30px">
+                        <div class="col">
+                            <h3>Admin Info</h3>
+                            <div class="mb-3">
+                                <label for="admin-user-id">User Id</label>
+                                <input type="text" class="form-control-plaintext" id="admin-user-id" name="admin-user-id" readonly value="@Model.UserId"/>
+                            </div>
+                            <div class="mb-3">
+                                <label for="admin-aad-name">AAD User</label>
+                                <input type="text" class="form-control-plaintext" id="admin-aad-name" name="admin-aad-name" readonly value="@Model.AADUserName"/>
+                            </div>
+                        </div>
                     </div>
                 </form>
             }

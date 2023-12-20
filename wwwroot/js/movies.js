@@ -268,7 +268,7 @@
                         reader.readAsDataURL(file);
                     }
                 }
-            })
+            });
         }
 
         /** DEBUG **/

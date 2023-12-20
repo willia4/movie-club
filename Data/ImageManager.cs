@@ -32,8 +32,8 @@ public class ImageManager : IImageManager
     {
         try
         {
-            await _client.UploadBlobAsync(blobName: blobName, content: data.AsBinaryData(), cancellationToken: cancellationToken);
             var blob = _client.GetBlobClient(blobName);
+            await blob.UploadAsync(content: data.AsBinaryData(), overwrite: true, cancellationToken: cancellationToken);
             
             var properties = await blob.GetPropertiesAsync(cancellationToken: cancellationToken);
             if (!properties.HasValue)

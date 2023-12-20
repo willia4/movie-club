@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
+using zinfandel_movie_club.Authentication;
 using zinfandel_movie_club.Config;
 using zinfandel_movie_club.Data;
 
@@ -47,7 +48,7 @@ public class Index : PageModel
 
         var newRole = roleAction switch
         {
-            string s when s == "set" => "foo",
+            string s when s == "set" => AuthenticationExtensions.AdminRole,
             string s when s == "clear" => null,
             _ => throw new Exceptions.BadRequestParameterException(nameof(roleAction), $"Invalid role action: {roleAction}")
         };

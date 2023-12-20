@@ -48,6 +48,7 @@ builder.Services
     .AddMicrosoftIdentityUI();
 
 builder.Services.AddSingleton<ICoverImageProvider, CoverImageProvider>();
+builder.Services.AddSingleton<IProfileImageProvider, ProfileImageProvider>();
 
 builder.Services.AddSingleton<ISuperUserIdentifier, SuperUserIdentifier>();
 builder.Services.AddSingleton<IAuthorizationHandler, AdminAuthorizationPolicy>();
