@@ -54,7 +54,7 @@ public class Index : PageModel
                 (await _dataManager.GetDocumentById(Id, cancellationToken))
                 .ValueOrThrow();
 
-        Ratings = await _ratings.GetRatingsForMovie(User, doc, cancellationToken);
+        Ratings = await _ratings.GetRatingsForMovie(HttpContext, doc, cancellationToken);
         AverageUserRating = Ratings.AverageRating();
         
         MovieTitle = doc.Title;

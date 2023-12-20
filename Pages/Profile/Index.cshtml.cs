@@ -51,7 +51,7 @@ public class Index : PageModel
         ViewData["Title"] = "User Profile";
 
         (var _, id) = FixupPageId(id);
-        (CanEdit, IsAdmin) = GetUserPermissions(id);
+        (IsAdmin, CanEdit) = GetUserPermissions(id);
 
         
         MemberRole = User.UserRole() ?? "";

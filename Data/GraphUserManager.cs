@@ -37,7 +37,7 @@ public interface IGraphUserManager
     Task SetUserDisplayName(IGraphUser user, string? newDisplayName, CancellationToken cancellationToken);
     Task SetProfileImage(IGraphUser user, string BlobTimestamp, string BlobPrefix, IDictionary<string, string> imagesBySize, CancellationToken cancellationToken);
     Task<string?> GetUserRole(string id, CancellationToken cancellationToken);
-    Task<IEnumerable<IGraphUser>> GetMembersAsync(CancellationToken cancellationToken);
+    Task<IEnumerable<IGraphUser>> GetMembersAsync(HttpContext context, CancellationToken cancellationToken);
 }
 
 public class GraphUserManager : IGraphUserManager
@@ -194,13 +194,13 @@ public class GraphUserManager : IGraphUserManager
     public async Task<string?> GetUserRole(string id, CancellationToken cancellationToken) =>
         (await GetGraphUserAsync(id, cancellationToken))?.UserRole;
 
-    public async Task<IEnumerable<IGraphUser>> GetMembersAsync(CancellationToken cancellationToken)
+    public async Task<IEnumerable<IGraphUser>> GetMembersAsync(HttpContext context, CancellationToken cancellationToken)
     {
         return (await _cache.GetOrCreateAsync(MemberListCacheKey, async (entry) =>
         {
             var members = await
                 GetGraphUsersAsync(cancellationToken)
-                    .Where(_userRoleDecorator.IsMember, cancellationToken)
+                    .Where(u => _userRoleDecorator.IsMember(context.Request, u), cancellationToken)
                     .ToImmutableList(cancellationToken);
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
             return members!;

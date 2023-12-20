@@ -32,7 +32,7 @@ public class ClaimRoleDecoratorMiddleware : IMiddleware
             var newClaims = Enumerable.Empty<Claim>();
             if (graphUser != null)
             {
-                newClaims = newClaims.AppendRange(_roleDecorator.RoleClaims(graphUser));
+                newClaims = newClaims.AppendRange(_roleDecorator.RoleClaims(context.Request, graphUser));
             }
 
             newClaims = newClaims.Append(new Claim(DisplayNameClaimType, graphUser?.DisplayName ?? ""));

@@ -6,7 +6,7 @@ namespace zinfandel_movie_club.Data;
 
 public interface IMovieRatingsManager
 {
-    public Task<ImmutableList<MovieRating>> GetRatingsForMovie(ClaimsPrincipal? currentUser, MovieDocument movie, CancellationToken cancellationToken);
+    public Task<ImmutableList<MovieRating>> GetRatingsForMovie(HttpContext context, MovieDocument movie, CancellationToken cancellationToken);
 }
 
 public class MovieRatingsManager : IMovieRatingsManager
@@ -18,12 +18,12 @@ public class MovieRatingsManager : IMovieRatingsManager
         _users = users;
     }
 
-    public async Task<ImmutableList<MovieRating>> GetRatingsForMovie(ClaimsPrincipal? currentUser, MovieDocument movie, CancellationToken cancellationToken)
+    public async Task<ImmutableList<MovieRating>> GetRatingsForMovie(HttpContext context, MovieDocument movie, CancellationToken cancellationToken)
     {
-        var currentUserId = currentUser?.NameIdentifier();
+        var currentUserId = context.User?.NameIdentifier();
         var movieId = movie.id ?? throw new ArgumentException($"MovieDocument with null id passed to {nameof(GetRatingsForMovie)}");
         
-        var allMembers = (await _users.GetMembersAsync(cancellationToken)).ToImmutableList();
+        var allMembers = (await _users.GetMembersAsync(context, cancellationToken)).ToImmutableList();
 
         var ratings =
             allMembers.Join(movie.UserRatings, r => r.NameIdentifier, m => m.Key, (m, r) =>
