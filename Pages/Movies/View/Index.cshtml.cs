@@ -9,13 +9,14 @@ namespace zinfandel_movie_club.Pages.Movies.View;
 public class Index : PageModel
 {
     private readonly ICosmosDocumentManager<MovieDocument> _dataManager;
-    private readonly IGraphUserManager _userManager;
+    
     private readonly ICoverImageProvider _coverImageProvider;
     private readonly IMovieDatabase _tmdb;
-    public Index(ICosmosDocumentManager<MovieDocument> dataManager, IGraphUserManager userManager, ICoverImageProvider coverImageProvider, IMovieDatabase tmdb)
+    private readonly IMovieRatingsManager _ratings;
+    public Index(ICosmosDocumentManager<MovieDocument> dataManager, IMovieRatingsManager ratings, ICoverImageProvider coverImageProvider, IMovieDatabase tmdb)
     {
         _dataManager = dataManager;
-        _userManager = userManager;
+        _ratings = ratings;
         _coverImageProvider = coverImageProvider;
         _tmdb = tmdb;
     }
@@ -38,7 +39,8 @@ public class Index : PageModel
     public string TmdbWatchPageHref = "";
     public ImmutableList<(Uri, string)> WatchProviders = ImmutableList<(Uri, string)>.Empty;
     
-    public IEnumerable<IGraphUser> AllMembers = Enumerable.Empty<IGraphUser>();
+    public ImmutableList<MovieRating> Ratings = ImmutableList<MovieRating>.Empty;
+    public decimal? AverageUserRating = null;
     
     public async Task OnGet(string id, CancellationToken cancellationToken)
     {
@@ -47,12 +49,13 @@ public class Index : PageModel
         {
             throw new BadRequestException("id cannot be empty");
         }
-
-        AllMembers = await _userManager.GetMembersAsync(cancellationToken);
         
         var doc =
                 (await _dataManager.GetDocumentById(Id, cancellationToken))
                 .ValueOrThrow();
+
+        Ratings = await _ratings.GetRatingsForMovie(User, doc, cancellationToken);
+        AverageUserRating = Ratings.AverageRating();
         
         MovieTitle = doc.Title;
         Overview = doc.Overview ?? "";

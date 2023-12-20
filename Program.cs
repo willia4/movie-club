@@ -131,6 +131,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddTransient<ClaimRoleDecoratorMiddleware>();
 builder.Services.AddScoped<IMovieDatabase, TheMovieDatabase>();
 builder.Services.AddScoped<IUriDownloader, UriDownloader>();
+builder.Services.AddScoped<IMovieRatingsManager, MovieRatingsManager>();
 builder.Services.AddHttpClient();
 
 var app = builder.Build();
