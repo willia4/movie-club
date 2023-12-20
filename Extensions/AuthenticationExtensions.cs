@@ -44,4 +44,7 @@ public static class AuthenticationExtensions
 
     public static string DisplayName(this ClaimsPrincipal claimsPrincipal) =>
         claimsPrincipal.ClaimOfType(DisplayNameClaimType) ?? "";
+
+    public static string ProfilePictureHref(this ClaimsPrincipal claimsPrincipal) =>
+        claimsPrincipal.ClaimOfType(ProfileImageUrlClaimType) ?? "";
 }

@@ -1,5 +1,6 @@
 ﻿@using zinfandel_movie_club.Config
 @using Microsoft.AspNetCore.Mvc.TagHelpers
+@using zinfandel_movie_club.Data
 @inject Branding branding
 
 @{
@@ -60,13 +61,23 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/Privacy">Privacy</a>
                         </li>
+                    </ul>
+                    <ul class="navbar-nav profile-picture-nav">
                         @if (User?.Identity?.IsAuthenticated ?? false)
                         {
-                            <li class="nav-item">
-                                @* ReSharper disable once Mvc.AreaNotResolved *@
-                                <a class="nav-link" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign Out</a>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img class="menu-profile-picture" src="@User.ProfilePictureHref()" alt="profile picture"/>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-page="Profile/Index">Profile</a></li>
+                                    @* ReSharper disable once Mvc.AreaNotResolved *@
+                                    <li><a class="dropdown-item" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign Out</a></li>
+                                </ul>
+
                             </li>
                         }
+
                     </ul>
                 </div>
             </div>

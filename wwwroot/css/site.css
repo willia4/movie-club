@@ -39,3 +39,16 @@ label.form-label {
   font-size: 140%;
   font-weight: 400;
 }
+
+nav .menu-profile-picture {
+  max-width: 32px;
+  max-height: 32px;
+}
+
+nav .dropdown-menu .dropdown-item {
+  font-size: 19pt;
+}
+
+nav .profile-picture-nav .dropdown-toggle::after {
+  display: none;
+}

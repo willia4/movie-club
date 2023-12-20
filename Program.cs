@@ -169,6 +169,12 @@ else
             })));
 }
 
+app.MapGet("microsoftidentity/account/signedout", (httpContext) =>
+{
+    httpContext.Response.Redirect("/");
+    return Task.CompletedTask;
+});
+
 app.UseForwardedHeaders(new ForwardedHeadersOptions()
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedProto

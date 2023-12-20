@@ -6,19 +6,18 @@ namespace zinfandel_movie_club.Authentication;
 
 public class ClaimRoleDecoratorMiddleware : IMiddleware
 {
-    public const string UserRoleClaimType = "x-club-role";
-    public const string UserIsSuperUserClaimType = "x-is-superuser";
-    public const string UserIsAdminClaimType = "x-is-admin";
-    public const string UserIsMemberClaimType = "x-is-member";
     public const string DisplayNameClaimType = "x-display-name";
+    public const string ProfileImageUrlClaimType = "x-profile-image";
     
     private readonly IGraphUserManager _userManager;
     private readonly IUserRoleDecorator _roleDecorator;
+    private readonly IProfileImageProvider _profileImageProvider;
     
-    public ClaimRoleDecoratorMiddleware(IGraphUserManager userManager, IUserRoleDecorator roleDecorator)
+    public ClaimRoleDecoratorMiddleware(IGraphUserManager userManager, IUserRoleDecorator roleDecorator, IProfileImageProvider profileImageProvider)
     {
         _userManager = userManager;
         _roleDecorator = roleDecorator;
+        _profileImageProvider = profileImageProvider;
     }
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
@@ -32,10 +31,13 @@ public class ClaimRoleDecoratorMiddleware : IMiddleware
             var newClaims = Enumerable.Empty<Claim>();
             if (graphUser != null)
             {
-                newClaims = newClaims.AppendRange(_roleDecorator.RoleClaims(context.Request, graphUser));
+                newClaims = newClaims
+                    .AppendRange(_roleDecorator.RoleClaims(context.Request, graphUser))
+                    .Append(new Claim(ProfileImageUrlClaimType, _profileImageProvider.ProfileImageUri(graphUser, ImageSize.Size256).ToString()));
             }
 
-            newClaims = newClaims.Append(new Claim(DisplayNameClaimType, graphUser?.DisplayName ?? ""));
+            newClaims = newClaims
+                .Append(new Claim(DisplayNameClaimType, graphUser?.DisplayName ?? ""));
 
             context.User.AddIdentity(new ClaimsIdentity(newClaims));
         }
