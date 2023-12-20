@@ -40,7 +40,9 @@ builder.Services.AddMicrosoftIdentityWebAppAuthentication(builder.Configuration,
 builder.Services
     .AddRazorPages(options =>
     {
-        options.Conventions.AuthorizePage("/Privacy", policy: "Admin");
+        options.Conventions.AuthorizePage("/SignIn", policy: "Member");
+        options.Conventions.AuthorizePage("/Privacy", policy: "Member");
+
         options.Conventions.AuthorizeFolder("/Admin", policy: "Admin");
         options.Conventions.AuthorizeFolder("/Profile", policy: "Member");
         options.Conventions.AuthorizeFolder("/Movies", policy: "Member");

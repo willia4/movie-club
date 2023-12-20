@@ -11,27 +11,38 @@
     <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/img/apple-touch-icon.png"><!-- 180×180 -->
     <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="stylesheet" href="//use.typekit.net/bty8qbb.css">
+    <style>
+        body {
+            padding-top:  25px;
+        }
+        h1 {
+            font-family:  "blakely", sans-serif;
+            font-size: 50pt;
+        }
+        
+        .sign-in {
+            margin-top:  40px;
+            font-family: "obvia-narrow", sans-serif;
+            font-style: normal;
+            color: black;
+            font-size:  30pt;
+        } 
+        
+        .sign-in a:visited {
+            color:  black;
+        }
+    </style>
 </head>
 <body>
 <div class="main">
     <h1>Coming Attractions</h1>
     
     <img src="~/img/drive-in.jpg"/>
+    
+    <div class="sign-in">
+        <a asp-page="SignIn">Sign In</a>
+    </div>
 </div>
 </body>
 </html>
-@* @using System.Security.Claims *@
-@* @model IndexModel *@
-@* @{ *@
-@*     ViewData["Title"] = "Home page"; *@
-@* } *@
-@* *@
-@* <div class="text-center"> *@
-@*     <h1 class="display-4">Welcome</h1> *@
-@*     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p> *@
-@*      *@
-@*     @foreach (var claim in User?.Claims ?? Enumerable.Empty<Claim>()) *@
-@*     { *@
-@*         <p>@claim.Type: @claim.Value</p>   *@
-@*     } *@
-@* </div> *@
