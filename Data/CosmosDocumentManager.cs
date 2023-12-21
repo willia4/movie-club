@@ -1,5 +1,8 @@
+using System.Collections.Immutable;
 using System.Net;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
 using zinfandel_movie_club.Data.Models;
 using zinfandel_movie_club.Exceptions;
 
@@ -9,6 +12,15 @@ public interface ICosmosDocumentManager<DocumentT>
 {
     public Task<Result<DocumentT, Exception>> UpsertDocument(DocumentT doc, CancellationToken cancellationToken);
     public Task<Result<DocumentT, Exception>> GetDocumentById(string id, CancellationToken cancellationToken);
+    public Task<QueryDefinition> MakeQuery(Func<IQueryable<DocumentT>, IQueryable<DocumentT>> f, CancellationToken cancellationToken);
+
+    public Task<Result<ImmutableList<DocumentT>, Exception>> QueryDocuments(CancellationToken cancellationToken);
+    public Task<Result<ImmutableList<DocumentT>, Exception>> QueryDocuments(Func<IQueryable<DocumentT>, IQueryable<DocumentT>> queryFactory, CancellationToken cancellationToken);
+    public Task<Result<ImmutableList<DocumentT>, Exception>> QueryDocuments(QueryDefinition query, CancellationToken cancellationToken);
+    public Task<Result<ImmutableList<DocumentT>, Exception>> QueryDocuments(int maxItems, CancellationToken cancellationToken);
+    public Task<Result<ImmutableList<DocumentT>, Exception>> QueryDocuments(int maxItems, Func<IQueryable<DocumentT>, IQueryable<DocumentT>> queryFactory, CancellationToken cancellationToken);
+    public Task<Result<ImmutableList<DocumentT>, Exception>> QueryDocuments(int maxItems, QueryDefinition query, CancellationToken cancellationToken);
+    public Task<Result<ImmutableList<DocumentT>, Exception>> GetAllDocuments(CancellationToken cancellationToken);
 }
 
 public class CosmosDocumentManager<DocumentT> : ICosmosDocumentManager<DocumentT> where DocumentT : CosmosDocument
@@ -110,5 +122,97 @@ public class CosmosDocumentManager<DocumentT> : ICosmosDocumentManager<DocumentT
         {
             return Result<DocumentT, Exception>.Error(outer);
         }
+    }
+
+    public Task<Result<ImmutableList<DocumentT>, Exception>> QueryDocuments(CancellationToken cancellationToken)
+    {
+        return QueryDocumentsInternal(
+            maxItems: -1,
+            queryDefinitionOrFactory: null,
+            cancellationToken: cancellationToken);
+    }
+
+    public Task<Result<ImmutableList<DocumentT>, Exception>> QueryDocuments(Func<IQueryable<DocumentT>, IQueryable<DocumentT>> queryFactory, CancellationToken cancellationToken)
+    {
+        return QueryDocumentsInternal(
+            maxItems: -1,
+            queryDefinitionOrFactory: Either<QueryDefinition, Func<IQueryable<DocumentT>, IQueryable<DocumentT>>>.OfRight(queryFactory),
+            cancellationToken: cancellationToken);
+    }
+    
+    public Task<Result<ImmutableList<DocumentT>, Exception>> QueryDocuments(QueryDefinition query, CancellationToken cancellationToken)
+    {
+        return QueryDocumentsInternal(
+            maxItems: -1,
+            queryDefinitionOrFactory: Either<QueryDefinition, Func<IQueryable<DocumentT>, IQueryable<DocumentT>>>.OfLeft(query),
+            cancellationToken: cancellationToken);
+    }
+    
+    public Task<Result<ImmutableList<DocumentT>, Exception>> QueryDocuments(int maxItems, CancellationToken cancellationToken)
+    {
+        return QueryDocumentsInternal(
+            maxItems: maxItems,
+            queryDefinitionOrFactory: null,
+            cancellationToken: cancellationToken);
+    }
+
+    public Task<Result<ImmutableList<DocumentT>, Exception>> QueryDocuments(int maxItems, Func<IQueryable<DocumentT>, IQueryable<DocumentT>> queryFactory, CancellationToken cancellationToken)
+    {
+        return QueryDocumentsInternal(
+            maxItems: maxItems,
+            queryDefinitionOrFactory: Either<QueryDefinition, Func<IQueryable<DocumentT>, IQueryable<DocumentT>>>.OfRight(queryFactory),
+            cancellationToken: cancellationToken);
+    }
+    
+    public Task<Result<ImmutableList<DocumentT>, Exception>> QueryDocuments(int maxItems, QueryDefinition query, CancellationToken cancellationToken)
+    {
+        return QueryDocumentsInternal(
+            maxItems: maxItems,
+            queryDefinitionOrFactory: Either<QueryDefinition, Func<IQueryable<DocumentT>, IQueryable<DocumentT>>>.OfLeft(query),
+            cancellationToken: cancellationToken);
+    }
+
+    private async Task<Result<ImmutableList<DocumentT>, Exception>> QueryDocumentsInternal(int maxItems, 
+        Either<QueryDefinition, Func<IQueryable<DocumentT>, IQueryable<DocumentT>>>? queryDefinitionOrFactory, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var container = await GetContainer(cancellationToken);
+            var query = 
+                queryDefinitionOrFactory?.Match(
+                    (qd) => qd,
+                    f => f(container.GetItemLinqQueryable<DocumentT>().Where(d => d.DocumentType == _documentType)).ToQueryDefinition())
+                ?? container.GetItemLinqQueryable<DocumentT>().Where(d => d.DocumentType == _documentType).ToQueryDefinition();
+
+            var iterator = container.GetItemQueryIterator<DocumentT>(query, requestOptions: new QueryRequestOptions()
+            {
+                MaxItemCount = maxItems
+            });
+
+            ImmutableList<DocumentT> results = ImmutableList<DocumentT>.Empty;
+            while (iterator.HasMoreResults)
+            {
+                var res = await iterator.ReadNextAsync(cancellationToken);
+                results = results.AddRange(res);
+            }
+
+            return Result<ImmutableList<DocumentT>, Exception>.Ok(results);
+        }
+        catch (Exception outer)
+        {
+            return Result<ImmutableList<DocumentT>, Exception>.Error(outer);
+        }
+    }
+
+    public async Task<QueryDefinition> MakeQuery(Func<IQueryable<DocumentT>, IQueryable<DocumentT>> f, CancellationToken cancellationToken)
+    {
+        var container = await GetContainer(cancellationToken);
+        var query = container.GetItemLinqQueryable<DocumentT>();
+        return f(query.Where(d => d.DocumentType == _documentType)).ToQueryDefinition();
+    }
+    
+    public Task<Result<ImmutableList<DocumentT>, Exception>> GetAllDocuments(CancellationToken cancellationToken)
+    {
+        return QueryDocumentsInternal(-1, null, cancellationToken);
     }
 }

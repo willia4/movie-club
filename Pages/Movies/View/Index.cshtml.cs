@@ -60,7 +60,7 @@ public class Index : PageModel
         MovieTitle = doc.Title;
         Overview = doc.Overview ?? "";
         
-        WatchedDate = doc.MostRecentWatchedDate();
+        WatchedDate = doc.MostRecentWatchedDate;
         CriticScore = doc.RottenTomatoesCriticScore;
         UserScore = doc.RottenTomatoesUserScore;
         RuntimeMinutes = doc.RuntimeMinutes;

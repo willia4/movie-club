@@ -118,6 +118,7 @@ public class Add : PageModel
         var newMovie = new Data.Models.MovieDocument
         {
             id = newId,
+            DateAdded = DateTimeOffset.Now,
             Title = Title,
             Overview = s(Overview),
             RottenTomatoesCriticScore = RottenTomatoesCriticScore,

@@ -2,9 +2,14 @@
 @import "../node_modules/bootstrap/scss/functions";
 
 // 2. Include any default variable overrides here
+$link-color: #df623f;
+
 $navbar-light-color: #f3da68;
 $nav-link-font-size: 42px;
 $nav-link-font-weight: 500;
+
+$nav-pills-link-active-bg: #df623f;
+$nav-pills-link-active-color: #f3da68;
 
 // 3. Include remainder of required Bootstrap stylesheets
 @import "../node_modules/bootstrap/scss/variables";
@@ -51,4 +56,10 @@ $nav-link-font-weight: 500;
 
 .was-validated .form-control:valid {
   background-image: none;
+}
+
+.nav-pills .nav-link {
+  --bs-nav-link-color: var(--bs-nav-pills-link-active-bg);
+  --bs-nav-link-hover-color: #cd380e;
+  --bs-nav-link-font-size: 18pt;
 }
