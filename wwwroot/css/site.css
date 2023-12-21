@@ -43,6 +43,7 @@ label.form-label {
 nav .menu-profile-picture {
   max-width: 32px;
   max-height: 32px;
+  margin-top: -8px;
 }
 
 nav .dropdown-menu .dropdown-item {
