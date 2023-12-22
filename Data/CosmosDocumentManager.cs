@@ -1,8 +1,10 @@
 using System.Collections.Immutable;
 using System.Net;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
+using zinfandel_movie_club.Config;
 using zinfandel_movie_club.Data.Models;
 using zinfandel_movie_club.Exceptions;
 
@@ -10,6 +12,7 @@ namespace zinfandel_movie_club.Data;
 
 public interface ICosmosDocumentManager<DocumentT>
 {
+    public Task<Container> InitializeContainer(CancellationToken cancellationToken);
     public Task<Result<DocumentT, Exception>> UpsertDocument(DocumentT doc, CancellationToken cancellationToken);
     public Task<Result<DocumentT, Exception>> GetDocumentById(string id, CancellationToken cancellationToken);
     public Task<QueryDefinition> MakeQuery(Func<IQueryable<DocumentT>, IQueryable<DocumentT>> f, CancellationToken cancellationToken);
@@ -43,34 +46,41 @@ public class CosmosDocumentManager<DocumentT> : ICosmosDocumentManager<DocumentT
 
         _client = new CosmosClient(connectionString: _connectionString, clientOptions: new CosmosClientOptions() { Serializer = new CosmosSystemTextJsonSerializer() });
     }
-    
+
     private Database? _cachedDatabase = null;
-    private async Task<Database> GetDatabase(CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        if (_cachedDatabase == null)
-        {
-            var res = await _client.GetDatabase(_database).ReadAsync(cancellationToken: cancellationToken);
-            _cachedDatabase = res?.Database ?? throw new InvalidOperationException($"Could not open Cosmos database {_database}");
-        }
-
-        return _cachedDatabase;
-    }
-
     private Container? _cachedContainer = null;
-
+    private readonly SemaphoreSlim _cacheLock = new SemaphoreSlim(1);
     private async Task<Container> GetContainer(CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        if (_cachedContainer == null)
+        await _cacheLock.WaitAsync(cancellationToken);
+        try
         {
-            var db = await GetDatabase(cancellationToken);
-            var res = await db.GetContainer(_container).ReadContainerAsync(cancellationToken: cancellationToken);
-            _cachedContainer = res?.Container ?? throw new InvalidOperationException($"Could not open Cosmos collection {_container} on database {db.Id}");
-        }
+            if (_cachedContainer == null)
+            {
+                if (_cachedDatabase == null)
+                {
+                    var databaseRes = await _client.GetDatabase(_database).ReadAsync(cancellationToken: cancellationToken);
+                    _cachedDatabase = databaseRes?.Database ?? throw new InvalidOperationException($"Could not open Cosmos database {_database}");
+                }
 
-        return _cachedContainer;
+                var containerRes = await _cachedDatabase.GetContainer(_container).ReadContainerAsync(
+                    requestOptions: new ContainerRequestOptions()
+                    {
+                        PopulateQuotaInfo = false
+                    },
+                    cancellationToken: cancellationToken);
+                _cachedContainer = containerRes?.Container ?? throw new InvalidOperationException($"Could not open Cosmos collection {_container} on database {_cachedDatabase.Id}");
+            }
+            
+            return _cachedContainer;
+        }
+        finally
+        {
+            _cacheLock.Release();
+        }
     }
+
+    public Task<Container> InitializeContainer(CancellationToken cancellationToken) => GetContainer(cancellationToken);
     
     public async Task<Result<DocumentT, Exception>> UpsertDocument(DocumentT doc, CancellationToken cancellationToken)
     {
@@ -214,5 +224,46 @@ public class CosmosDocumentManager<DocumentT> : ICosmosDocumentManager<DocumentT
     public Task<Result<ImmutableList<DocumentT>, Exception>> GetAllDocuments(CancellationToken cancellationToken)
     {
         return QueryDocumentsInternal(-1, null, cancellationToken);
+    }
+}
+
+public static class CosmosDocumentManagerExtensions
+{
+    private static bool TryGetDocumentType<T>(out string documentType) where T : CosmosDocument
+    {
+        try
+        {
+            documentType = (string)typeof(T)!.GetProperty("_DocumentType", BindingFlags.Static | BindingFlags.Public)!.GetValue(null)!;
+            return true;
+        }
+        catch
+        {
+            documentType = default!;
+            return false;
+        }
+    }
+
+    public static object AddCosmosDocumentManager<T>(this IServiceCollection services) where T : CosmosDocument
+    {
+        return services.AddCosmosDocumentManager<T>(id => new PartitionKey(id));
+    }
+
+    public static object AddCosmosDocumentManager<T>(this IServiceCollection services, Func<string, PartitionKey> partitionKeyMaker) where T : CosmosDocument
+    {
+        return services.AddSingleton<ICosmosDocumentManager<T>>(sp =>
+        {
+            var config = sp.GetRequiredService<CosmosConfig>();
+            if (!TryGetDocumentType<T>(out var documentType))
+            {
+                throw new InvalidOperationException($"Could not get document type for type {typeof(T).Name}");
+            }
+
+            return new CosmosDocumentManager<T>(
+                connectionString: config.ConnectionString,
+                database: config.Database,
+                container: config.Container,
+                documentType: documentType,
+                partitionKeyMaker: partitionKeyMaker);
+        });
     }
 }

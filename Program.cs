@@ -126,6 +126,7 @@ builder.Services.AddSingleton<ICosmosDocumentManager<zinfandel_movie_club.Data.M
         documentType: MovieDocument._DocumentType,
         partitionKeyMaker: id => new PartitionKey(id));
 });
+builder.Services.AddCosmosDocumentManager<MovieDocument>();
 
 builder.Services.AddSingleton<IImageManager, ImageManager>();
 builder.Services.AddSingleton<Branding>();
@@ -136,6 +137,7 @@ builder.Services.AddScoped<IMovieDatabase, TheMovieDatabase>();
 builder.Services.AddScoped<IUriDownloader, UriDownloader>();
 builder.Services.AddScoped<IMovieRatingsManager, MovieRatingsManager>();
 builder.Services.AddHttpClient();
+builder.Services.AddHostedService<BackgroundTasks>();
 
 var app = builder.Build();
 app.UseExceptionHandler("/error");
