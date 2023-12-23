@@ -28,15 +28,18 @@ public class UserRatingsApiController : Controller
     [Route("users/{userId}")]
     public async Task<IActionResult> PostNewUserRating(string movieId, string userId, [FromBody] PostMovieUserRatingRequest req, CancellationToken cancellationToken)
     {
-        if (req.NewRating < 0M || req.NewRating > 10M)
+        if (req.NewRating.HasValue)
         {
-            return BadRequest("Rating must be between 0.00 and 10.00");
-        }
+            if (req.NewRating.Value < 0M || req.NewRating > 10M)
+            {
+                return BadRequest("Rating must be between 0.00 and 10.00");
+            }
 
-        var roundedRating = Math.Round(req.NewRating, 2);
-        if (roundedRating != req.NewRating)
-        {
-            return BadRequest("Rating must have at most 2 decimal places");
+            var roundedRating = Math.Round(req.NewRating.Value, 2);
+            if (roundedRating != req.NewRating.Value)
+            {
+                return BadRequest("Rating must have at most 2 decimal places");
+            }
         }
 
         var isAdmin = User.IsAdmin();

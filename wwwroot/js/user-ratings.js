@@ -31,40 +31,43 @@
         button.addEventListener("click", async (evt) => {
             const value = (input.value || '').trim();
             hideValidation();
+            
+            /** @type { number | undefined } */
+            let parsed = undefined;
             if (value.length === 0) {
-                showValidation("Required");
-                return;
+                parsed = undefined;
             }
-            
-            if (!/\d*\.?\d*/.test(value)) {
-                showValidation("Only a decimal number is allowed");
-                return;
-            }
-            
-            const decimalLocation = value.indexOf('.');
+            else {
+                if (!/\d*\.?\d*/.test(value)) {
+                    showValidation("Only a decimal number is allowed");
+                    return;
+                }
 
-            if (decimalLocation >= 0) {
-                const parts = value.split('.');
-                if (parts.length !== 2) {
-                    showValidation("Only a single decimal is allowed");
+                const decimalLocation = value.indexOf('.');
+
+                if (decimalLocation >= 0) {
+                    const parts = value.split('.');
+                    if (parts.length !== 2) {
+                        showValidation("Only a single decimal is allowed");
+                        return;
+                    }
+                    const decimalPart = parts[1];
+                    if (parts[1].length > 2) {
+                        showValidation("Only two-digits of precision are allowed");
+                        return;
+                    }
+                }
+
+                parsed = parseFloat(value);
+                if (isNaN(parsed)) {
+                    showValidation("Could not parse value");
                     return;
                 }
-                const decimalPart = parts[1];
-                if (parts[1].length > 2) {
-                    showValidation("Only two-digits of precision are allowed");
+
+                if (parsed < 0 || parsed > 10) {
+                    showValidation("Only values between 0.00 and 10.00 are allowed");
                     return;
                 }
-            }
-            
-            const parsed = parseFloat(value);
-            if (isNaN(parsed)) {
-                showValidation("Could not parse value");
-                return;
-            }
-            
-            if (parsed < 0 || parsed > 10) {
-                showValidation("Only values between 0.00 and 10.00 are allowed");
-                return;
             }
             
             input.disabled = true;
