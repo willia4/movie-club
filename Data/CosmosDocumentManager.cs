@@ -24,6 +24,7 @@ public interface ICosmosDocumentManager<DocumentT>
     public Task<Result<ImmutableList<DocumentT>, Exception>> QueryDocuments(int maxItems, Func<IQueryable<DocumentT>, IQueryable<DocumentT>> queryFactory, CancellationToken cancellationToken);
     public Task<Result<ImmutableList<DocumentT>, Exception>> QueryDocuments(int maxItems, QueryDefinition query, CancellationToken cancellationToken);
     public Task<Result<ImmutableList<DocumentT>, Exception>> GetAllDocuments(CancellationToken cancellationToken);
+    public Task<Result<HttpStatusCode, Exception>> DeleteDocument(string id, CancellationToken cancellationToken);
 }
 
 public class CosmosDocumentManager<DocumentT> : ICosmosDocumentManager<DocumentT> where DocumentT : CosmosDocument
@@ -224,6 +225,27 @@ public class CosmosDocumentManager<DocumentT> : ICosmosDocumentManager<DocumentT
     public Task<Result<ImmutableList<DocumentT>, Exception>> GetAllDocuments(CancellationToken cancellationToken)
     {
         return QueryDocumentsInternal(-1, null, cancellationToken);
+    }
+
+    public async Task<Result<HttpStatusCode, Exception>> DeleteDocument(string id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var container = await GetContainer(cancellationToken);
+            var res = await container.DeleteItemAsync<DocumentT>(id, _partitionKeyMaker(id), cancellationToken: cancellationToken);
+
+            if ((int) res.StatusCode < 200 || (int) res.StatusCode >= 300)
+            {
+                return Result<HttpStatusCode, Exception>.Error($"Unexpected cosmos status code: {res.StatusCode:G}".ToException());
+            }
+
+            return Result<HttpStatusCode, Exception>.Ok(res.StatusCode);
+        }
+        catch (Exception outer)
+        {
+            return Result<HttpStatusCode, Exception>.Error(outer);
+        }
+        
     }
 }
 

@@ -16,3 +16,13 @@
 .movie-row .detail-value {
     
 }
+
+.our-rating-container {
+    /*background-color: var(--alternate-bright-color);*/
+    background-color: #f3da6854;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-left: 3px;
+    padding-right: 3px;
+    margin-right: 3px;
+}

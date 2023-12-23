@@ -1,7 +1,8 @@
 ﻿@page
 @using zinfandel_movie_club.Data
+@using zinfandel_movie_club.Data.Models
 @model zinfandel_movie_club.Pages.Movies.Index
-@inject ICoverImageProvider coverProvider
+@inject IImageUrlProvider<MovieDocument> coverProvider
 @{
     ViewData["Title"] = "Movies";
 }
@@ -17,6 +18,49 @@
 @{
     string TranslateDecimal(decimal? d) => d.HasValue ? d.Value.ToString("N2") : "??";
 }
+
+@{
+    async Task RenderMovie(bool watched, MovieDocument movie)
+    {
+        var className = watched ? "movie-unwatched" : "movie-watched";
+        
+        <div class="movie-row @className row mb-2">
+            <div class="col-2 movie-cover">
+                <img class="img-fluid" src="@coverProvider.ImageUri(movie, ImageSize.Size128)" alt="cover for @movie.Title"/>
+            </div>
+            <div class="col movie-details">
+                <div class="movie-title"><a asp-page="/Movies/View/Index" asp-route-id="@movie.id">@movie.Title.Or(movie.id)</a>
+                    @if (!string.IsNullOrWhiteSpace(movie.ReleaseDate))
+                    {
+                        <span class="release-date">(@movie.ReleaseDate)</span>
+                    }
+                </div>
+                <div class="movie-ratings">
+                    <div>
+                        <span class="our-rating-container">
+                            <span class="detail-heading our-rating">Us:</span>
+                            <span class="detail-value our-rating">@Model.OurRatingForMovies[movie.id!]</span>
+                        </span>
+                        @if (movie.RottenTomatoesCriticScore.HasValue || movie.RottenTomatoesUserScore.HasValue)
+                        {
+                            <span class="detail-heading">RT Critics:</span>
+                            <span class="detail-value">@TranslateDecimal(movie.RottenTomatoesCriticScore)</span>
+                            <span class="detail-heading">RT Users:</span>
+                            <span class="detail-value">@TranslateDecimal(movie.RottenTomatoesUserScore)</span>
+                        }
+                    </div>
+                    @if (movie.RuntimeMinutes.HasValue)
+                    {
+                        <div>
+                            <span class="detail-heading">Runtime:</span>
+                            <span class="detail-value">@movie.RuntimeMinutes minutes</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+}
 <div class="view-content">
     <ul class="nav nav-pills">
         <li class="nav-item">
@@ -30,76 +74,14 @@
         <div class="tab-pane show active" id="tabs-unwatched" role="tabpanel">
             @foreach (var m in Model.UnwatchedMovies)
             {
-                <div class="movie-row movie-unwatched row mb-2">
-                    <div class="col-2 movie-cover">
-                        <img class="img-fluid" src="@coverProvider.CoverImageUri(m, ImageSize.Size128)" alt="cover for @m.Title"/>
-                    </div>
-                    <div class="col movie-details">
-                        <div class="movie-title"><a asp-page="/Movies/View/Index" asp-route-id="@m.id">@m.Title.Or(@m.id)</a>
-                            @if (!string.IsNullOrWhiteSpace(m.ReleaseDate))
-                            {
-                                <span class="release-date">(@m.ReleaseDate)</span>
-                            }
-                        </div>
-                        <div class="movie-ratings">
-                            @if (@m.RottenTomatoesCriticScore.HasValue || @m.RottenTomatoesUserScore.HasValue)
-                            {
-                                <div>
-                                    <span class="detail-heading">RT Critics:</span>
-                                    <span class="detail-value">@TranslateDecimal(m.RottenTomatoesCriticScore)</span>
-                                    <span class="detail-heading">RT Users:</span>
-                                    <span class="detail-value">@TranslateDecimal(@m.RottenTomatoesUserScore)</span>
-                                </div>
-                            }
-                            @if (@m.RuntimeMinutes.HasValue)
-                            {
-                                <div>
-                                    <span class="detail-heading">Runtime:</span>
-                                    <span class="detail-value">@m.RuntimeMinutes minutes</span>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                </div>
-                
+                await RenderMovie(watched: false, movie: m);
             }
         </div>
         
         <div class="tab-pane" id="tabs-watched" role="tabpanel">
             @foreach (var m in Model.WatchedMovies)
             {
-                <div class="movie-row movie-watched row mb-2">
-                    <div class="col-2 movie-cover">
-                        <img class="img-fluid" src="@coverProvider.CoverImageUri(m, ImageSize.Size128)" alt="cover for @m.Title"/>
-                    </div>
-                    <div class="col movie-details">
-                        <div class="movie-title"><a asp-page="/Movies/View/Index" asp-route-id="@m.id">@m.Title.Or(@m.id)</a>
-                            @if (!string.IsNullOrWhiteSpace(m.ReleaseDate))
-                            {
-                                <span class="release-date">(@m.ReleaseDate)</span>
-                            }
-                        </div>
-                        <div class="movie-ratings">
-                            @if (@m.RottenTomatoesCriticScore.HasValue || @m.RottenTomatoesUserScore.HasValue)
-                            {
-                                <div>
-                                    <span class="detail-heading">RT Critics:</span>
-                                    <span class="detail-value">@TranslateDecimal(m.RottenTomatoesCriticScore)</span>
-                                    <span class="detail-heading">RT Users:</span>
-                                    <span class="detail-value">@TranslateDecimal(@m.RottenTomatoesUserScore)</span>
-                                </div>
-                            }
-                            @if (@m.RuntimeMinutes.HasValue)
-                            {
-                                <div>
-                                    <span class="detail-heading">Runtime:</span>
-                                    <span class="detail-value">@m.RuntimeMinutes minutes</span>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                </div>
-                
+                await RenderMovie(watched: true, movie: m);
             }
         </div>
     </div>

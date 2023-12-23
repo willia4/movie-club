@@ -41,7 +41,6 @@ public class MovieDocument : CosmosDocument
     public DateOnly? MostRecentWatchedDate { get; set; } = null;
     public DateTimeOffset? DateAdded { get; set; } = null; 
     public Dictionary<string, string> CoverImagesBySize { get; set; } = new();
-    public Dictionary<string, decimal> UserRatings = new();
 
     public string SlugId()
     {
@@ -58,4 +57,14 @@ public class MovieDocument : CosmosDocument
         var firstHyphen = slug.IndexOf("-", StringComparison.OrdinalIgnoreCase);
         return firstHyphen >= 0 ? slug.Substring(0, firstHyphen).Trim() : slug.Trim();
     }
+}
+
+public class UserRatingDocument : CosmosDocument
+{
+    public static string _DocumentType => "UserRating";
+    public override string DocumentType => _DocumentType;
+
+    public string UserId { get; set; } = "";
+    public string MovieId { get; set; } = "";
+    public decimal Rating { get; set; } = 0.0M;
 }

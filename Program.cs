@@ -46,6 +46,8 @@ builder.Services
         options.Conventions.AuthorizeFolder("/Admin", policy: "Admin");
         options.Conventions.AuthorizeFolder("/Profile", policy: "Member");
         options.Conventions.AuthorizeFolder("/Movies", policy: "Member");
+        
+        
     })
     .AddMicrosoftIdentityUI();
 
@@ -111,6 +113,7 @@ builder.Services.AddSingleton<Azure.Core.TokenCredential>(sp =>
 builder.Services.AddScoped<IIdGenerator, IdGenerator>();
 builder.Services.AddScoped<MovieIdGenerator>();
 builder.Services.AddScoped<UserIdGenerator>();
+builder.Services.AddScoped<UserRatingIdGenerator>();
 
 builder.Services.AddSingleton<IUserRoleDecorator, UserRoleDecorator>();
 builder.Services.AddSingleton<IUserProfileKeyValueStore, UserProfileKeyValueStore>();

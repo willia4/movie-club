@@ -10,16 +10,18 @@ public class Index : PageModel
 {
     private readonly ICosmosDocumentManager<MovieDocument> _dataManager;
     
-    private readonly ICoverImageProvider _coverImageProvider;
+    private readonly IImageUrlProvider<MovieDocument> _coverImageProvider;
     private readonly IMovieDatabase _tmdb;
     private readonly IMovieRatingsManager _ratings;
-    public Index(ICosmosDocumentManager<MovieDocument> dataManager, IMovieRatingsManager ratings, ICoverImageProvider coverImageProvider, IMovieDatabase tmdb)
+    public Index(ICosmosDocumentManager<MovieDocument> dataManager, IMovieRatingsManager ratings, IImageUrlProvider<MovieDocument> coverImageProvider, IMovieDatabase tmdb)
     {
         _dataManager = dataManager;
         _ratings = ratings;
         _coverImageProvider = coverImageProvider;
         _tmdb = tmdb;
     }
+
+    public bool UserIsAdmin = false;
     
     public string Id = "";
     public string CoverImageHref = "";
@@ -28,8 +30,8 @@ public class Index : PageModel
     public string Overview = "";
     
     public DateOnly? WatchedDate = null;
-    public decimal? CriticScore = null;
-    public decimal? UserScore = null;
+    public decimal? RTCriticScore = null;
+    public decimal? RTUserScore = null;
     public decimal? TmdbScore = null;
     public int? RuntimeMinutes = null;
     public string? ReleaseDate = null;
@@ -40,10 +42,12 @@ public class Index : PageModel
     public ImmutableList<(Uri, string)> WatchProviders = ImmutableList<(Uri, string)>.Empty;
     
     public ImmutableList<MovieRating> Ratings = ImmutableList<MovieRating>.Empty;
-    public decimal? AverageUserRating = null;
+    public decimal? OurRating = null;
+    public string OurRatingFormatted = "Not Yet";
     
     public async Task OnGet(string id, CancellationToken cancellationToken)
     {
+        UserIsAdmin = User.IsAdmin();
         Id = MovieDocument.IdFromSlugId(id);
         if (string.IsNullOrWhiteSpace(Id))
         {
@@ -55,14 +59,15 @@ public class Index : PageModel
                 .ValueOrThrow();
 
         Ratings = await _ratings.GetRatingsForMovie(HttpContext, doc, cancellationToken);
-        AverageUserRating = Ratings.AverageRating();
-        
+
+        (OurRating, OurRatingFormatted) = Ratings.AverageRating(); 
+ 
         MovieTitle = doc.Title;
         Overview = doc.Overview ?? "";
         
         WatchedDate = doc.MostRecentWatchedDate;
-        CriticScore = doc.RottenTomatoesCriticScore;
-        UserScore = doc.RottenTomatoesUserScore;
+        RTCriticScore = doc.RottenTomatoesCriticScore;
+        RTUserScore = doc.RottenTomatoesUserScore;
         RuntimeMinutes = doc.RuntimeMinutes;
         ReleaseDate = doc.ReleaseDate;
         TmdbId = doc.TmdbId ?? "";
@@ -83,6 +88,6 @@ public class Index : PageModel
                 TmdbScore = Math.Round(details!.Rating, 2);
             }
         }
-        CoverImageHref = _coverImageProvider.CoverImageUri(doc, ImageSize.Size512).ToString();
+        CoverImageHref = _coverImageProvider.ImageUri(doc, ImageSize.Size512).ToString();
     }
 }

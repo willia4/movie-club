@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using zinfandel_movie_club.Authentication;
 using static zinfandel_movie_club.Authentication.ClaimRoleDecoratorMiddleware;
 namespace zinfandel_movie_club;
 

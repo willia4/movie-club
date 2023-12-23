@@ -5,6 +5,7 @@ public interface IIdGenerator
 {
     public string MovieId();
     public string UserId();
+    public string MovieRatingId();
 }
 
 public class IdGenerator : IIdGenerator
@@ -24,6 +25,7 @@ public class IdGenerator : IIdGenerator
     
     public string MovieId() => GenerateId("mov");
     public string UserId() => GenerateId("usr");
+    public string MovieRatingId() => GenerateId("urt");
 }
 
 public class MovieIdGenerator
@@ -50,3 +52,14 @@ public class UserIdGenerator
     public string NewId() => _id.UserId();
 }
 
+public class UserRatingIdGenerator
+{
+    private readonly IIdGenerator _id;
+
+    public UserRatingIdGenerator(IIdGenerator id)
+    {
+        _id = id;
+    }
+
+    public string NewId() => _id.MovieRatingId();
+}

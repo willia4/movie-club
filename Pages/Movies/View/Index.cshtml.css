@@ -34,3 +34,64 @@
 .tmdb-link a {
     color: var(--bright-background-color);
 }
+
+.ratings-row h2 {
+    font-family: var(--header-menu-font);
+}
+
+.user-rating {
+    padding: 8px;
+    border: solid 1px black;
+    min-width: 175px;
+    min-height: 90px;
+    margin-right: 15px;
+    margin-bottom: 15px;
+}
+
+.user-rating.current-user {
+    background-color: var(--alternate-bright-color);
+}
+
+.user-rating img {
+    max-width: 64px;
+    max-height: 64px;
+    margin-right: 8px;
+}
+
+.user-rating .user-name {
+    font-weight: bold;
+}
+
+.user-rating button {
+    margin-top: 5px;
+}
+
+.user-rating button.not-loading .text {
+    display: inline;
+}
+
+.user-rating button.not-loading .spinner-border {
+    display: none;
+}
+
+.user-rating button.loading .text {
+    display: none;
+}
+
+.user-rating button.loading .spinner-border {
+    display: inline-block;
+}
+
+.user-rating .validation {
+    color: #811b1b;
+    font-weight: bold;
+    font-style: italic;
+}
+
+.user-rating .validation.not-shown {
+    display: none;
+}
+
+#our-rating {
+    color: var(--bright-background-color);
+}

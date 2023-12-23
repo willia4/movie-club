@@ -11,9 +11,9 @@ public class ClaimRoleDecoratorMiddleware : IMiddleware
     
     private readonly IGraphUserManager _userManager;
     private readonly IUserRoleDecorator _roleDecorator;
-    private readonly IProfileImageProvider _profileImageProvider;
+    private readonly IImageUrlProvider<IGraphUser> _profileImageProvider;
     
-    public ClaimRoleDecoratorMiddleware(IGraphUserManager userManager, IUserRoleDecorator roleDecorator, IProfileImageProvider profileImageProvider)
+    public ClaimRoleDecoratorMiddleware(IGraphUserManager userManager, IUserRoleDecorator roleDecorator, IImageUrlProvider<IGraphUser> profileImageProvider)
     {
         _userManager = userManager;
         _roleDecorator = roleDecorator;
@@ -33,7 +33,7 @@ public class ClaimRoleDecoratorMiddleware : IMiddleware
             {
                 newClaims = newClaims
                     .AppendRange(_roleDecorator.RoleClaims(context.Request, graphUser))
-                    .Append(new Claim(ProfileImageUrlClaimType, _profileImageProvider.ProfileImageUri(graphUser, ImageSize.Size256).ToString()));
+                    .Append(new Claim(ProfileImageUrlClaimType, _profileImageProvider.ImageUri(graphUser, ImageSize.Size256).ToString()));
             }
 
             newClaims = newClaims

@@ -1,10 +1,29 @@
 @page "{id}"
+@using zinfandel_movie_club.Data
 @model zinfandel_movie_club.Pages.Movies.View.Index
+@inject IImageUrlProvider<IGraphUser> _profileImageBase
 
 @{
+    IImageUrlProvider<IGraphUser> _profileImage = _profileImageBase.WithDefaultSize(ImageSize.Size128); 
     ViewData["Title"] = Model.MovieTitle;
 }
+@section scripts {
+    <script type="text/javascript" src="~/js/user-ratings.js"></script>
+}
 
+@section styles {
+    <style>
+        .user-rating .user-name a {
+            color: black;
+            text-decoration: none;
+        }
+        
+        .user-rating .user-name a:hover {
+            text-decoration: none;
+            color: #df623f;
+        }
+    </style>
+}
 
 <div class="row">
     <div class="col-md-5 col-5">
@@ -68,16 +87,16 @@
         }
         
         <dl class="row">
-            @if (Model.CriticScore.HasValue)
+            @if (Model.RTCriticScore.HasValue)
             {
-                <dt class="col-sm-7 col-md-5 col-lg-4">Critic Rating</dt>
-                <dd class="col-sm-5 col-md-7 col-lg-8"><span>@Model.CriticScore.Value.ToString("N2")</span></dd>
+                <dt class="col-sm-7 col-md-5 col-lg-4">RT Critic Rating</dt>
+                <dd class="col-sm-5 col-md-7 col-lg-8"><span>@Model.RTCriticScore.Value.ToString("N2")</span></dd>
             }
 
-            @if (Model.UserScore.HasValue)
+            @if (Model.RTUserScore.HasValue)
             {
-                <dt class="col-sm-7 col-md-5 col-lg-4">User Rating</dt>
-                <dd class="col-sm-5 col-md-7 col-lg-8"><span>@Model.UserScore.Value.ToString("N2")</span></dd>
+                <dt class="col-sm-7 col-md-5 col-lg-4">RT User Rating</dt>
+                <dd class="col-sm-5 col-md-7 col-lg-8"><span>@Model.RTUserScore.Value.ToString("N2")</span></dd>
             }
             
             @if (Model.TmdbScore.HasValue)
@@ -85,6 +104,53 @@
                 <dt class="col-sm-7 col-md-5 col-lg-4">TMDB Rating</dt>
                 <dd class="col-sm-5 col-md-7 col-lg-8"><span>@Model.TmdbScore.Value.ToString("N2")</span></dd>
             }
+            
+            <dt class="col-sm-7 col-md-5 col-lg-4">Our Rating</dt>
+            <dd id="our-rating" class="col-sm-5 col-md-7 col-lg-8"><span>@Model.OurRatingFormatted</span></dd>
         </dl>
     </div>
 </div>
+
+<div class="row mt-5 ratings-row">
+    <div class="col">
+        <h2>Ratings</h2>
+        <div class="d-inline-flex flex-wrap ratings">
+            @foreach (var rating in Model.Ratings)
+            {
+                <div class="user-rating d-flex @(rating.IsCurrentUser ? "current-user" : "")">
+                    <img src="@_profileImage.ImageUri(@rating.User)" alt="profile picture for @rating.UserName"/>
+                    <div class="d-flex flex-column">
+                        <div class="user-name">
+                            <a asp-page="/Profile/Index" asp-route-id="@rating.User.NameIdentifier">@rating.UserName</a>
+                        </div>
+                        @if (rating.IsCurrentUser || Model.UserIsAdmin)
+                        {
+                            <input id="update-rating-input-@(rating.UserId)" type="number" placeholder="Rating" data-userid="@rating.UserId" data-movieid="@Model.Id" value="@(rating.IsRated ? rating.Rating!.Value : "")"/>
+                            <div id="validation-@(rating.UserId)" class="validation not-shown"></div>
+                            <button id="update-rating-button-@rating.UserId)" type="button" class="update-rating-button not-loading" data-userid="@rating.UserId" data-movieid="@Model.Id">
+                                <span class="text">Update Rating</span>
+                                <span class="spinner-border spinner-border-sm"></span>
+                            </button>
+                        }
+                        else
+                        {
+                            @if (rating.IsRated)
+                            {
+                                <div class="rating">@rating.Rating!.Value.ToString("N2")</div>
+                            }
+                            else
+                            {
+                                <div class="rating not-rating">Not Rated</div>
+                            }
+                        }
+                    </div>
+
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<template id="search-result-spinner-template">
+    <img src="/img/spinner.png" alt="spinner" class="spinner"/>
+</template>

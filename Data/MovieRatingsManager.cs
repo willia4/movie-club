@@ -1,74 +1,172 @@
 ﻿using zinfandel_movie_club.Data.Models;
 using System.Collections.Immutable;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
+using zinfandel_movie_club.Exceptions;
 
 namespace zinfandel_movie_club.Data;
 
 public interface IMovieRatingsManager
 {
+    public Task<ImmutableList<MovieRating>> GetAllRatings(HttpContext context, CancellationToken cancellationToken);
     public Task<ImmutableList<MovieRating>> GetRatingsForMovie(HttpContext context, MovieDocument movie, CancellationToken cancellationToken);
+    public Task<MovieRating> UpdateRatingForMovie(HttpContext context, IGraphUser user, MovieDocument movie, decimal? newRating, CancellationToken cancellationToken);
 }
 
 public class MovieRatingsManager : IMovieRatingsManager
 {
     private readonly IGraphUserManager _users;
-    
-    public MovieRatingsManager(IGraphUserManager users)
+    private readonly UserRatingIdGenerator _idGenerator;
+    private readonly ICosmosDocumentManager<UserRatingDocument> _ratingsDocumentManager;
+    public MovieRatingsManager(IGraphUserManager users, ICosmosDocumentManager<UserRatingDocument> ratingsDocumentManager, UserRatingIdGenerator idGenerator)
     {
         _users = users;
+        _ratingsDocumentManager = ratingsDocumentManager;
+        _idGenerator = idGenerator;
     }
 
-    public async Task<ImmutableList<MovieRating>> GetRatingsForMovie(HttpContext context, MovieDocument movie, CancellationToken cancellationToken)
+    private ImmutableList<MovieRating> CreateMovieRatings(string currentUserId, string movieId, ImmutableList<IGraphUser> allMembers, ImmutableList<UserRatingDocument> ratingDocs)
     {
-        var currentUserId = context.User?.NameIdentifier();
-        var movieId = movie.id ?? throw new ArgumentException($"MovieDocument with null id passed to {nameof(GetRatingsForMovie)}");
-        
-        var allMembers = (await _users.GetMembersAsync(context, cancellationToken)).ToImmutableList();
-
-        var ratings =
-            allMembers.Join(movie.UserRatings, r => r.NameIdentifier, m => m.Key, (m, r) =>
-            {
-                var (_, rating) = r;
-                return new RatedMovieRating(
-                    IsCurrentUser: currentUserId == m.NameIdentifier,
-                    UserId: m.NameIdentifier,
-                    UserName: m.DisplayName,
-                    MovieId: movieId,
-                    MovieTitle: movie.Title,
-                    MovieRating: rating);
-            }).ToImmutableList();
-
-        var ratedUserIds = new HashSet<string>(ratings.Select(r => r.UserId));
+        var existingRatings =
+            ratingDocs
+                .Join(allMembers, (r => r.UserId), (m => m.NameIdentifier), (r, m) => (r, m))
+                .Select(t =>
+                {
+                    var (r, m) = t;
+                    return new RatedMovieRating(
+                        IsCurrentUser: currentUserId == r.UserId,
+                        User: m,
+                        MovieId: movieId,
+                        MovieRating: r.Rating);
+                })
+                .ToImmutableList();
+        var ratedUserIds = existingRatings.Select(r => r.UserId).ToImmutableHashSet();
 
         var unratedUsers =
             allMembers
                 .Where(m => !ratedUserIds.Contains(m.NameIdentifier))
                 .Select(m => new UnratedMovieRating(
                     IsCurrentUser: currentUserId == m.NameIdentifier,
-                    UserId: m.NameIdentifier,
-                    UserName: m.DisplayName,
-                    MovieId: movieId,
-                    MovieTitle: movie.Title))
+                    User: m,
+                    MovieId: movieId))
                 .ToImmutableList();
-
-        return ((IEnumerable<MovieRating>) ratings).Concat(unratedUsers).ToImmutableList();
+        
+        return ((IEnumerable<MovieRating>) existingRatings).Concat(unratedUsers).OrderBy(r => r.UserName).ToImmutableList();
     }
+    
+    public async Task<ImmutableList<MovieRating>> GetAllRatings(HttpContext context, CancellationToken cancellationToken)
+    {
+        var currentUserId = context.User?.NameIdentifier() ?? "";
+        
+        var allMembersTask = _users.GetMembersAsync(context, cancellationToken);
+        var allRatingsTask = _ratingsDocumentManager.GetAllDocuments(cancellationToken);
+        
+        await Task.WhenAll(new Task[] { allMembersTask, allRatingsTask });
+        var allMembers = (await allMembersTask).ToImmutableList();
+        var allRatings = (await allRatingsTask).ValueOrThrow();
+
+        var results = ImmutableList<MovieRating>.Empty;
+
+        var movieIds = allRatings.Select(r => r.MovieId).Distinct().ToImmutableList();
+        foreach (var movieId in movieIds)
+        {
+            var movieRatings = allRatings.Where(r => r.MovieId == movieId).ToImmutableList();
+            results = results.AddRange(CreateMovieRatings(currentUserId, movieId, allMembers, movieRatings));
+        }
+
+        return results;
+    }
+    
+    public async Task<ImmutableList<MovieRating>> GetRatingsForMovie(HttpContext context, MovieDocument movie, CancellationToken cancellationToken)
+    {
+         var currentUserId = context.User?.NameIdentifier() ?? "";
+         var movieId = movie.id ?? throw new ArgumentException($"MovieDocument with null id passed to {nameof(GetRatingsForMovie)}");
+         
+        var allMembersTask = _users.GetMembersAsync(context, cancellationToken);
+        var allRatingsTask = _ratingsDocumentManager.QueryDocuments(q => q.Where(d => d.MovieId == movieId), cancellationToken);
+
+        await Task.WhenAll(new Task[] { allMembersTask, allRatingsTask });
+        var allMembers = (await allMembersTask).ToImmutableList();
+        var allRatingsDocuments = (await allRatingsTask).ValueOrThrow();
+
+        return CreateMovieRatings(currentUserId, movieId, allMembers, allRatingsDocuments);
+    }
+    
+    public async Task<MovieRating> UpdateRatingForMovie(HttpContext context, IGraphUser user, MovieDocument movie, decimal? newRating, CancellationToken cancellationToken)
+    {
+        var currentUserId = context.User?.NameIdentifier();
+        if (movie.id == null) throw new InvalidOperationException("Bad movie id");
+        
+        var existingRating = 
+            (await _ratingsDocumentManager.QueryDocuments(q => q.Where(r => r.UserId == user.NameIdentifier && r.MovieId == movie.id), cancellationToken))
+            .Map(docs => docs.FirstOrDefault())
+            .Match(doc => doc, ex => ex is NotFoundException ? null : throw ex);
+
+        // we don't want there to be a rating and there isn't one; we are done
+        if (existingRating == null && !newRating.HasValue)
+        {
+            return new UnratedMovieRating(
+                IsCurrentUser: currentUserId == user.NameIdentifier,
+                User: user,
+                MovieId: movie.id);
+        }
+
+        // we don't want there to be a rating, but there is one; so we need to delete it
+        if (existingRating != null && !newRating.HasValue)
+        {
+            (await _ratingsDocumentManager.DeleteDocument(existingRating.id!, cancellationToken)).ThrowIfError();
+            return new UnratedMovieRating(
+                IsCurrentUser: currentUserId == user.NameIdentifier,
+                User: user,
+                MovieId: movie.id ?? "");
+        }
+
+        // should never get here with a null new rating, so assume it going forward
+        System.Diagnostics.Debug.Assert(newRating.HasValue);
+        
+        if (existingRating == null)
+        {
+            existingRating = new UserRatingDocument()
+            {
+                id = _idGenerator.NewId(),
+                MovieId = movie.id,
+                Rating = newRating.Value,
+                UserId = user.NameIdentifier
+            };
+        }
+        else
+        {
+            existingRating.Rating = newRating.Value;
+        }
+
+        var updateRes =
+            (await _ratingsDocumentManager.UpsertDocument(existingRating, cancellationToken)).ValueOrThrow();
+
+        return new RatedMovieRating(
+            IsCurrentUser: currentUserId == user.NameIdentifier,
+            User: user,
+            MovieId: movie.id ?? "",
+            MovieRating: updateRes.Rating);
+    }
+    
 }
 
-public abstract record MovieRating(bool IsCurrentUser, string UserId, string UserName, string MovieId, string MovieTitle)
+
+public abstract record MovieRating(bool IsCurrentUser, IGraphUser User, string MovieId)
 {
     public abstract decimal? Rating { get; }
     public abstract bool IsRated { get; }
+    public string UserId => User.NameIdentifier;
+    public string UserName => User.DisplayName;
 }
 
-public record UnratedMovieRating(bool IsCurrentUser, string UserId, string UserName, string MovieId, string MovieTitle) : MovieRating(IsCurrentUser, UserId, UserName, MovieId, MovieTitle)
+public record UnratedMovieRating(bool IsCurrentUser, IGraphUser User, string MovieId) : MovieRating(IsCurrentUser, User, MovieId)
 {
     public override decimal? Rating => null;
 
     public override bool IsRated => false;
 }
 
-public record RatedMovieRating(bool IsCurrentUser, string UserId, string UserName, string MovieId, string MovieTitle, decimal MovieRating) : MovieRating(IsCurrentUser, UserId, UserName, MovieId, MovieTitle)
+public record RatedMovieRating(bool IsCurrentUser, IGraphUser User, string MovieId, decimal MovieRating) : MovieRating(IsCurrentUser, User, MovieId)
 {
     public override decimal? Rating => MovieRating;
     public override bool IsRated => true;
@@ -76,17 +174,21 @@ public record RatedMovieRating(bool IsCurrentUser, string UserId, string UserNam
 
 public static class MovieRatingExtensions
 {
-    public static decimal? AverageRating(this IEnumerable<MovieRating> ratings)
+    public static (decimal?, string) AverageRating(this IEnumerable<MovieRating> ratings)
     {
+        static (decimal?, string) ret(decimal? v) => (v, v switch
+        {
+            null => "Not Yet",
+            _ => v.Value.ToString("N2")
+        });
+        
         var frozen  = ratings.ToImmutableList();
         
-        if (frozen.Count <= 1) return frozen.Select(f => f.Rating).FirstOrDefault();
+        if (frozen.Count <= 1) return ret(frozen.Select(f => f.Rating).FirstOrDefault());
         var rated = frozen.Where(f => f.IsRated).ToImmutableList();
-        if (rated.Count >= 2)
-        {
-            return rated.Select(r => r.Rating ?? 0).Average();
-        }
-
-        return null;
+        
+        return rated.Count >= 2 
+            ? ret(rated.Select(r => r.Rating ?? 0).Average()) 
+            : ret(null);
     }
 }
