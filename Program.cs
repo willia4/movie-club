@@ -49,8 +49,8 @@ builder.Services
     })
     .AddMicrosoftIdentityUI();
 
-builder.Services.AddSingleton<ICoverImageProvider, CoverImageProvider>();
-builder.Services.AddSingleton<IProfileImageProvider, ProfileImageProvider>();
+builder.Services.AddSingleton<IImageUrlProvider<MovieDocument>, CoverImageProvider>();
+builder.Services.AddSingleton<IImageUrlProvider<IGraphUser>, ProfileImageProvider>();
 
 builder.Services.AddSingleton<ISuperUserIdentifier, SuperUserIdentifier>();
 builder.Services.AddSingleton<IAuthorizationHandler, AdminAuthorizationPolicy>();
@@ -115,18 +115,8 @@ builder.Services.AddScoped<UserIdGenerator>();
 builder.Services.AddSingleton<IUserRoleDecorator, UserRoleDecorator>();
 builder.Services.AddSingleton<IUserProfileKeyValueStore, UserProfileKeyValueStore>();
 builder.Services.AddSingleton<IGraphUserManager, GraphUserManager>();
-builder.Services.AddSingleton<ICosmosDocumentManager<zinfandel_movie_club.Data.Models.MovieDocument>>(sp =>
-{
-    var config = sp.GetRequiredService<CosmosConfig>();
-
-    return new CosmosDocumentManager<MovieDocument>(
-        connectionString: config.ConnectionString,
-        database: config.Database,
-        container: config.Container,
-        documentType: MovieDocument._DocumentType,
-        partitionKeyMaker: id => new PartitionKey(id));
-});
 builder.Services.AddCosmosDocumentManager<MovieDocument>();
+builder.Services.AddCosmosDocumentManager<UserRatingDocument>();
 
 builder.Services.AddSingleton<IImageManager, ImageManager>();
 builder.Services.AddSingleton<Branding>();

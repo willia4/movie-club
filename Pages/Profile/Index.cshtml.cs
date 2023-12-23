@@ -9,7 +9,7 @@ namespace zinfandel_movie_club.Pages.Profile;
 public class Index : PageModel
 {
     private readonly IGraphUserManager _graphUserManager;
-    private readonly IProfileImageProvider _profileImageProvider;
+    private readonly IImageUrlProvider<IGraphUser> _profileImageProvider;
     private readonly IImageManager _imageManager;
     
     public bool IsAdmin = false;
@@ -21,7 +21,7 @@ public class Index : PageModel
     public string UserId = "";
     public string AADUserName = "";
     
-    public Index(IGraphUserManager graphUserManager, IProfileImageProvider profileImageProvider, IImageManager imageManager)
+    public Index(IGraphUserManager graphUserManager, IImageUrlProvider<IGraphUser> profileImageProvider, IImageManager imageManager)
     {
         _graphUserManager = graphUserManager;
         _profileImageProvider = profileImageProvider;
@@ -53,16 +53,16 @@ public class Index : PageModel
         (var _, id) = FixupPageId(id);
         (IsAdmin, CanEdit) = GetUserPermissions(id);
 
-        
-        MemberRole = User.UserRole() ?? "";
-        DisplayName = User.DisplayName();
-        
         var user = await _graphUserManager.GetGraphUserAsync(id, cancellationToken);
         if (user == null)
         {
             throw new NotFoundException();
         }
-        ProfileImageHref = _profileImageProvider.ProfileImageUri(user, ImageSize.Size512).ToString();
+
+        MemberRole = user.UserRole;
+        DisplayName = user.DisplayName;
+        
+        ProfileImageHref = _profileImageProvider.ImageUri(user, ImageSize.Size512).ToString();
 
         UserId = id;
         AADUserName = user.AADUserName;
