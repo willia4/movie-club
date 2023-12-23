@@ -1,0 +1,70 @@
+﻿@page "/movies/data"
+@model zinfandel_movie_club.Pages.Movies.RawData
+
+@{
+    ViewData["Title"] = "Raw Data";
+    ViewData["OmitResponsiveColumns"] = true;
+}
+
+@section styles {
+    <style>
+        table.table a {
+            color:  black;
+        }
+    </style>
+}
+
+<div class="container table-responsive">
+    <table class="table table-striped table-bordered table-sm">
+        <thead>
+        <tr>
+            <th scope="col">Title</th>
+            <th scope="col">Watched Date</th>
+            
+            @foreach (var (userName, _) in Model.Users)
+            {
+                <th scope="col">@userName Rating</th>
+            }
+            <th scope="col">Average Rating</th>
+            <th scope="col">Rotten Tomatoes (Critics)</th>
+            <th scope="col">Rotten Tomatoes (Audience)</th>
+            <th scope="col">Runtime (minutes)</th>
+            <th scope="col">TMDB ID</th>
+        </tr>
+        </thead>   
+        <tbody>
+        @foreach (var row in Model.DataRows)
+        {
+            <tr>
+                <th scope="row"><a asp-page="/Movies/View/Index" asp-route-id="@row.Slug">@row.MovieTitle</a></th>
+                <td>@row.WatchDate</td>
+                @foreach (var (_, userId) in Model.Users)
+                {
+                    if (@row.RatingsByUser.TryGetValue(userId, out var rating))
+                    {
+                        <td>@rating</td>
+                    }
+                    else
+                    {
+                        <td></td>
+                    }
+                }
+                <td>@row.OurAverageRating</td>
+                <td>@row.RottenTomatoesCriticScore</td>
+                <td>@row.RottenTomatoesUserScore</td>
+                <td>@row.RuntimeMinutes</td>
+                <td>
+                    @if (!string.IsNullOrWhiteSpace(row.TmdbId))
+                    {
+                        <a href="https://www.themoviedb.org/movie/@row.TmdbId">@row.TmdbId</a>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    
+    <div class="csv-link">
+        <a asp-page="/Movies/RawData" asp-route-csv="true">Download CSV</a>
+    </div>
+</div>

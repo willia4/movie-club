@@ -1,0 +1,4 @@
+﻿table.table thead th {
+    background-color: var(--bright-background-color);
+    color: var(--alternate-bright-color);
+}

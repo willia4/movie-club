@@ -5,6 +5,7 @@
 
 @{
     var pageTitle = (ViewData["Title"]?.ToString() ?? "").Trim();
+    var omitResponsiveColumns = (ViewData.TryGetValue("OmitResponsiveColumns", out var omit) && (bool)omit!);
     var hasTitle = !string.IsNullOrWhiteSpace(pageTitle);
 }
 
@@ -28,63 +29,73 @@
 </head>
 
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm  mb-3">
-            <div class="container">
-                @if (hasTitle)
-                {
-                    <div class="logo-container logo-with-page-name d-sm-inline-flex justify-content-between">
-                        <div class="logo-link">
-                            <a href="/">@branding.SiteName</a>
-                        </div>
-                        <div class="page-name">@pageTitle</div>
+<header>
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm  mb-3">
+        <div class="container">
+            @if (hasTitle)
+            {
+                <div class="logo-container logo-with-page-name d-sm-inline-flex justify-content-between">
+                    <div class="logo-link">
+                        <a href="/">@branding.SiteName</a>
                     </div>
-                }
-                else
-                {
-                    <div class="logo-container logo-without-page-name d-sm-inline-flex justify-content-between">
-                        <div class="logo-link">
-                            <a href="/">@branding.SiteName</a>
-                        </div>
-                    </div>
-                }
-
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Movies/Index">Movies</a>
-                        </li>
-                    </ul>
-                    <ul class="navbar-nav add-movie-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-page="/Movies/Add"><i class="bi bi-plus-circle-fill"></i>&nbsp;Add Movie</a>
-                        </li>
-                    </ul>
-                    <ul class="navbar-nav profile-picture-nav">
-                        @if (User?.Identity?.IsAuthenticated ?? false)
-                        {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img class="menu-profile-picture" src="@User.ProfilePictureHref()" alt="profile picture"/>
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-page="/Profile/Index">Profile</a></li>
-                                    @* ReSharper disable once Mvc.AreaNotResolved *@
-                                    <li><a class="dropdown-item" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign Out</a></li>
-                                </ul>
-
-                            </li>
-                        }
-
-                    </ul>
+                    <div class="page-name">@pageTitle</div>
                 </div>
+            }
+            else
+            {
+                <div class="logo-container logo-without-page-name d-sm-inline-flex justify-content-between">
+                    <div class="logo-link">
+                        <a href="/">@branding.SiteName</a>
+                    </div>
+                </div>
+            }
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <ul class="navbar-nav flex-grow-1">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-page="/Movies/Index">Movies</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav add-movie-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Movies/Add"><i class="bi bi-plus-circle-fill"></i>&nbsp;Add Movie</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav profile-picture-nav">
+                    @if (User?.Identity?.IsAuthenticated ?? false)
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img class="menu-profile-picture" src="@User.ProfilePictureHref()" alt="profile picture"/>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-page="/Profile/Index">Profile</a></li>
+                                @* ReSharper disable once Mvc.AreaNotResolved *@
+                                <li><a class="dropdown-item" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign Out</a></li>
+                            </ul>
+
+                        </li>
+                    }
+
+                </ul>
             </div>
-        </nav>
-    </header>
+        </div>
+    </nav>
+</header>
+@if (omitResponsiveColumns)
+{
+    <main role="main">
+        @RenderBody()
+    </main>
+}
+else
+{
+
+
     <div class="container">
         <main role="main" class="pb-3">
             <div id="main-content-row" class="row">
@@ -96,7 +107,7 @@
             </div>
         </main>
     </div>
-
+}
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

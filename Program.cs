@@ -42,12 +42,10 @@ builder.Services
     {
         options.Conventions.AuthorizePage("/SignIn", policy: "Member");
         options.Conventions.AuthorizePage("/Privacy", policy: "Member");
-
+        
         options.Conventions.AuthorizeFolder("/Admin", policy: "Admin");
         options.Conventions.AuthorizeFolder("/Profile", policy: "Member");
         options.Conventions.AuthorizeFolder("/Movies", policy: "Member");
-        
-        
     })
     .AddMicrosoftIdentityUI();
 
