@@ -29,7 +29,7 @@
                 <img class="img-fluid" src="@coverProvider.ImageUri(movie, ImageSize.Size128)" alt="cover for @movie.Title"/>
             </div>
             <div class="col movie-details">
-                <div class="movie-title"><a asp-page="/Movies/View/Index" asp-route-id="@movie.id">@movie.Title.Or(movie.id)</a>
+                <div class="movie-title"><a asp-page="/Movies/View/Index" asp-route-id="@movie.SlugId()">@movie.Title.Or(movie.id)</a>
                     @if (!string.IsNullOrWhiteSpace(movie.ReleaseDate))
                     {
                         <span class="release-date">(@movie.ReleaseDate)</span>
@@ -37,6 +37,10 @@
                 </div>
                 <div class="movie-ratings">
                     <div>
+                        <span class="my-rating-container">
+                            <span class="detail-heading my-rating">Me:</span>
+                            <span class="detail-value my-rating">@Model.MyRatingsForMovies[movie.id!]</span>
+                        </span>
                         <span class="our-rating-container">
                             <span class="detail-heading our-rating">Us:</span>
                             <span class="detail-value our-rating">@Model.OurRatingForMovies[movie.id!]</span>

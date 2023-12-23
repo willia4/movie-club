@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using System.Collections.Immutable;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using zinfandel_movie_club.Data;
+using zinfandel_movie_club.Data.Models;
 using zinfandel_movie_club.Exceptions;
 
 namespace zinfandel_movie_club.Pages.Profile;
@@ -10,7 +12,10 @@ public class Index : PageModel
 {
     private readonly IGraphUserManager _graphUserManager;
     private readonly IImageUrlProvider<IGraphUser> _profileImageProvider;
+    private readonly IImageUrlProvider<MovieDocument> _movieCoverImageProvider;
     private readonly IImageManager _imageManager;
+    private readonly IMovieRatingsManager _ratingsManager;
+    private readonly ICosmosDocumentManager<MovieDocument> _movieManager;
     
     public bool IsAdmin = false;
     public bool CanEdit = false;
@@ -21,11 +26,16 @@ public class Index : PageModel
     public string UserId = "";
     public string AADUserName = "";
     
-    public Index(IGraphUserManager graphUserManager, IImageUrlProvider<IGraphUser> profileImageProvider, IImageManager imageManager)
+    public ImmutableList<ProfilePageMovieRating> RatingsForUser = ImmutableList<ProfilePageMovieRating>.Empty;
+
+    public Index(IGraphUserManager graphUserManager, IImageUrlProvider<IGraphUser> profileImageProvider, IImageUrlProvider<MovieDocument> movieCoverImageProvider, IImageManager imageManager, IMovieRatingsManager ratingsManager, ICosmosDocumentManager<MovieDocument> _movieManager)
     {
         _graphUserManager = graphUserManager;
         _profileImageProvider = profileImageProvider;
+        _movieCoverImageProvider = movieCoverImageProvider.WithDefaultSize(ImageSize.Size128);
         _imageManager = imageManager;
+        _ratingsManager = ratingsManager;
+        this._movieManager = _movieManager;
     }
     
     private (bool isAdmin, bool canEdit) GetUserPermissions(string pageId)
@@ -59,6 +69,32 @@ public class Index : PageModel
             throw new NotFoundException();
         }
 
+        var ratingsForUser = await _ratingsManager.GetRatingsForUser(HttpContext, user, cancellationToken);
+        var moviesForRatings = 
+            (await _movieManager.GetDocumentsByIds(ratingsForUser.Select(r => r.MovieId).Distinct(), cancellationToken))
+            .ValueOrThrow()
+            .ToImmutableDictionary(m => m.id!, m => m);
+        
+        RatingsForUser = ImmutableList<ProfilePageMovieRating>.Empty;
+
+        RatingsForUser =
+            ratingsForUser
+                .OfType<RatedMovieRating>()
+                .Aggregate(ImmutableList<ProfilePageMovieRating>.Empty, (acc, r) =>
+                {
+                    if (moviesForRatings.TryGetValue(r.MovieId, out var movie))
+                    {
+                        return acc.Add(new ProfilePageMovieRating(
+                            Slug: movie.SlugId(),
+                            Title: movie.Title,
+                            CoverHref: _movieCoverImageProvider.ImageUri(movie).ToString(),
+                            Rating: r.MovieRating));
+                    }
+                    return acc;
+                })
+                .OrderByDescending(r => r.Rating)
+                .ToImmutableList();
+        
         MemberRole = user.UserRole;
         DisplayName = user.DisplayName;
         
@@ -135,3 +171,5 @@ public class Index : PageModel
         return new RedirectToPageResult($"Index", new { id = (wasSelf ? "" : id) });
     }
 }
+
+public record ProfilePageMovieRating(string Slug, string Title, string CoverHref, decimal Rating);

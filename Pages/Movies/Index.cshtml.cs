@@ -20,9 +20,11 @@ public class Index : PageModel
     public ImmutableList<MovieDocument> WatchedMovies = ImmutableList<MovieDocument>.Empty;
     
     public ImmutableDictionary<string, string> OurRatingForMovies = ImmutableDictionary<string, string>.Empty;
+    public ImmutableDictionary<string, string> MyRatingsForMovies = ImmutableDictionary<string, string>.Empty;
     
     public async Task OnGet(CancellationToken cancellationToken)
     {
+        var currentUserId = User.NameIdentifier();
         var moviesTask = _dataManager.QueryDocuments(cancellationToken: cancellationToken);
         var ratingsTask = _ratingsManager.GetAllRatings(HttpContext, cancellationToken);
 
@@ -37,6 +39,14 @@ public class Index : PageModel
                     m => m.id!,
                     m => allRatings.GetValueOrDefault(m.id!, ImmutableList<MovieRating>.Empty).AverageRating().Second());
 
+        var myRatings = allRatings.Values.SelectMany(v => v).Where(r => r.UserId == currentUserId);
+        
+        MyRatingsForMovies =
+            allRatings
+                .Values
+                .SelectMany(v => v.Where(r => r.UserId == currentUserId))
+                .ToImmutableDictionary(r => r.MovieId, r => r.Rating.HasValue ? r.Rating.Value.ToString("N2") : "Not Yet");
+            
         UnwatchedMovies = 
             movies
                 .Where(m => m.WatchedDates.Count == 0)

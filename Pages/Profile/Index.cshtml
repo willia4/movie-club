@@ -73,6 +73,27 @@
                 </form>
             }
             
+            @if (Model.RatingsForUser.Count > 0)
+            {
+                <div class="row ratings-row">
+                    <h2>Ratings</h2>
+                    <div class="d-inline-flex flex-wrap ratings">
+                        @foreach (var rating in Model.RatingsForUser)
+                        {
+                            <div class="user-rating d-flex">
+                                <img src="@rating.CoverHref" alt="cover image for @rating.Title"/>
+                                <div class="d-flex flex-column">
+                                    <div class="movie-title">
+                                        <a asp-page="/Movies/View/Index" asp-route-id="@rating.Slug">@rating.Title</a>
+                                    </div>
+                                    <div class="rating">@rating.Rating.ToString("N2")</div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
             @if (Model.IsAdmin)
             {
                 <form>

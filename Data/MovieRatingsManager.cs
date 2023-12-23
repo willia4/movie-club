@@ -9,6 +9,7 @@ public interface IMovieRatingsManager
 {
     public Task<ImmutableList<MovieRating>> GetAllRatings(HttpContext context, CancellationToken cancellationToken);
     public Task<ImmutableList<MovieRating>> GetRatingsForMovie(HttpContext context, MovieDocument movie, CancellationToken cancellationToken);
+    public Task<ImmutableList<MovieRating>> GetRatingsForUser(HttpContext context, IGraphUser user, CancellationToken cancellationToken);
     public Task<MovieRating> UpdateRatingForMovie(HttpContext context, IGraphUser user, MovieDocument movie, decimal? newRating, CancellationToken cancellationToken);
 }
 
@@ -24,20 +25,19 @@ public class MovieRatingsManager : IMovieRatingsManager
         _idGenerator = idGenerator;
     }
 
+    private MovieRating ToRating(string currentUserId, IGraphUser userForRating, UserRatingDocument doc) => 
+        new RatedMovieRating(
+            IsCurrentUser: currentUserId == doc.UserId,
+            User: userForRating,
+            MovieId: doc.MovieId,
+            MovieRating: doc.Rating);
+    
     private ImmutableList<MovieRating> CreateMovieRatings(string currentUserId, string movieId, ImmutableList<IGraphUser> allMembers, ImmutableList<UserRatingDocument> ratingDocs)
     {
         var existingRatings =
             ratingDocs
                 .Join(allMembers, (r => r.UserId), (m => m.NameIdentifier), (r, m) => (r, m))
-                .Select(t =>
-                {
-                    var (r, m) = t;
-                    return new RatedMovieRating(
-                        IsCurrentUser: currentUserId == r.UserId,
-                        User: m,
-                        MovieId: movieId,
-                        MovieRating: r.Rating);
-                })
+                .Select(t => ToRating(currentUserId, t.Second(), t.First()))
                 .ToImmutableList();
         var ratedUserIds = existingRatings.Select(r => r.UserId).ToImmutableHashSet();
 
@@ -89,6 +89,14 @@ public class MovieRatingsManager : IMovieRatingsManager
         var allRatingsDocuments = (await allRatingsTask).ValueOrThrow();
 
         return CreateMovieRatings(currentUserId, movieId, allMembers, allRatingsDocuments);
+    }
+
+    public async Task<ImmutableList<MovieRating>> GetRatingsForUser(HttpContext context, IGraphUser user, CancellationToken cancellationToken)
+    {
+        var currentUserId = context.User?.NameIdentifier() ?? "";
+        var ratingsDocuments = (await _ratingsDocumentManager.QueryDocuments(q => q.Where(r => r.UserId == user.NameIdentifier), cancellationToken)).ValueOrThrow();
+
+        return ratingsDocuments.Select(r => ToRating(currentUserId, user, r)).ToImmutableList();
     }
     
     public async Task<MovieRating> UpdateRatingForMovie(HttpContext context, IGraphUser user, MovieDocument movie, decimal? newRating, CancellationToken cancellationToken)

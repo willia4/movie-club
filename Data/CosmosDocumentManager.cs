@@ -15,6 +15,7 @@ public interface ICosmosDocumentManager<DocumentT>
     public Task<Container> InitializeContainer(CancellationToken cancellationToken);
     public Task<Result<DocumentT, Exception>> UpsertDocument(DocumentT doc, CancellationToken cancellationToken);
     public Task<Result<DocumentT, Exception>> GetDocumentById(string id, CancellationToken cancellationToken);
+    public Task<Result<ImmutableList<DocumentT>, Exception>> GetDocumentsByIds(IEnumerable<string> ids, CancellationToken cancellationToken);
     public Task<QueryDefinition> MakeQuery(Func<IQueryable<DocumentT>, IQueryable<DocumentT>> f, CancellationToken cancellationToken);
 
     public Task<Result<ImmutableList<DocumentT>, Exception>> QueryDocuments(CancellationToken cancellationToken);
@@ -132,6 +133,30 @@ public class CosmosDocumentManager<DocumentT> : ICosmosDocumentManager<DocumentT
         catch (Exception outer)
         {
             return Result<DocumentT, Exception>.Error(outer);
+        }
+    }
+
+    public async Task<Result<ImmutableList<DocumentT>, Exception>> GetDocumentsByIds(IEnumerable<string> ids, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var container = await GetContainer(cancellationToken);
+            var idList = 
+                ids
+                    .Select(id => (id, _partitionKeyMaker(id)))
+                    .ToImmutableList();
+
+            var res = await container.ReadManyItemsAsync<DocumentT>(idList, cancellationToken: cancellationToken);
+            if ((int)res.StatusCode < 200 || (int)res.StatusCode >= 300)
+            {
+                return Result<ImmutableList<DocumentT>, Exception>.Error($"Unexpected status from Cosmos: {res.StatusCode:G}".ToException());
+            }
+
+            return Result<ImmutableList<DocumentT>, Exception>.Ok(res.ToImmutableList());
+        }
+        catch (Exception outer)
+        {
+            return Result<ImmutableList<DocumentT>, Exception>.Error(outer);
         }
     }
 
