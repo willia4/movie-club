@@ -57,7 +57,8 @@ public class Index : PageModel
         WatchedMovies = 
             movies
                 .Where(m => m.WatchedDates.Count > 0)
-                .OrderBy(m => m.DateAdded)
+                .OrderByDescending(m => m.MostRecentWatchedDate)
+                .ThenBy(m => m.DateAdded)
                 .ThenBy(m => m.Title)
                 .ToImmutableList();
     }

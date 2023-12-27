@@ -2,16 +2,23 @@
 @import "../node_modules/bootstrap/scss/functions";
 
 // 2. Include any default variable overrides here
-$link-color: #df623f;
+$header-menu-font: "blakely", sans-serif;
 
-$navbar-light-color: #f3da68;
+$page-background-white: #f8f7f7;
+$normal-orange: #df623f;
+$normal-yellow: #f3da68;
+$dark-orange: #d05c3c;
+
+$link-color: $normal-orange;
+
+$navbar-light-color: $normal-yellow;
 $nav-link-font-size: 42px;
 $nav-link-font-weight: 500;
 
-$nav-pills-link-active-bg: #df623f;
-$nav-pills-link-active-color: #f3da68;
+$nav-pills-link-active-bg: $normal-orange;
+$nav-pills-link-active-color: $normal-yellow;
 
-$table-bg: #f8f7f7;
+$table-bg: $page-background-white;
 
 // 3. Include remainder of required Bootstrap stylesheets
 @import "../node_modules/bootstrap/scss/variables";
@@ -64,4 +71,19 @@ $table-bg: #f8f7f7;
   --bs-nav-link-color: var(--bs-nav-pills-link-active-bg);
   --bs-nav-link-hover-color: #cd380e;
   --bs-nav-link-font-size: 18pt;
+}
+
+.btn-primary {
+  @include button-variant($normal-orange, $normal-orange, $normal-yellow, $dark-orange, $normal-yellow, $normal-yellow)
+}
+
+.modal-content {
+  .modal-header {
+    background-color: $normal-orange;
+    color: $normal-yellow;
+    
+    .modal-title {
+      font-family: $header-menu-font;
+    }
+  }
 }

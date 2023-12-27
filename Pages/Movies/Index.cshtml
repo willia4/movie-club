@@ -60,6 +60,13 @@
                             <span class="detail-value">@movie.RuntimeMinutes minutes</span>
                         </div>
                     }
+                    @if (watched && movie.MostRecentWatchedDate.HasValue)
+                    {
+                        <div>
+                            <span class="detail-heading">Watched: </span>
+                            <span class="detail-value">@movie.MostRecentWatchedDate.Value.ToString("o")</span>
+                        </div>
+                    }
                 </div>
             </div>
         </div>

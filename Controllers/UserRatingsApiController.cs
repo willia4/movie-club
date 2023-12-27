@@ -8,7 +8,7 @@ using zinfandel_movie_club.Data.Models;
 namespace zinfandel_movie_club.Controllers;
 
 [Controller]
-[Route("/api/v1/movies/{movieId}")]
+[Route("/api/v1/movies/{movieId}/users")]
 [Authorize(Policy = "Member")]
 [EnableRateLimiting(policyName: "api")]
 public class UserRatingsApiController : Controller
@@ -25,7 +25,7 @@ public class UserRatingsApiController : Controller
     }
 
     [HttpPost]
-    [Route("users/{userId}")]
+    [Route("{userId}")]
     public async Task<IActionResult> PostNewUserRating(string movieId, string userId, [FromBody] PostMovieUserRatingRequest req, CancellationToken cancellationToken)
     {
         if (req.NewRating.HasValue)

@@ -66,19 +66,19 @@
     margin-top: 5px;
 }
 
-.user-rating button.not-loading .text {
+button.not-loading .text {
     display: inline;
 }
 
-.user-rating button.not-loading .spinner-border {
+button.not-loading .spinner-border {
     display: none;
 }
 
-.user-rating button.loading .text {
+button.loading .text {
     display: none;
 }
 
-.user-rating button.loading .spinner-border {
+button.loading .spinner-border {
     display: inline-block;
 }
 

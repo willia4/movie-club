@@ -9,6 +9,7 @@
 }
 @section scripts {
     <script type="text/javascript" src="~/js/user-ratings.js"></script>
+    <script type="text/javascript" src="~/js/watch-date.js"></script>
 }
 
 @section styles {
@@ -32,16 +33,24 @@
     <div class="col">
         <dl class="row">
             <dt class="col-sm-4 col-md-3 col-lg-2">Watched</dt>
-            <dd class="col-sm-8 col-md-9 col-lg-10">@if (Model.WatchedDate.HasValue)
+            <dd class="col-sm-8 col-md-9 col-lg-5">@if (Model.WatchedDate.HasValue)
                                                     {
-                                                        <span>@Model.WatchedDate.Value</span>
+                                                        <span class="watch-date-value">@Model.WatchedDate.Value.ToString("o")</span>
                                                     }
                                                     else
                                                     {
-                                                        <span>Not Watched</span>
+                                                        <span class="watch-date-value">Not Watched</span>
                                                     }
             </dd>
-
+            <div class="watch-button-container col-sm-12 col-md-12 col-lg-5">
+                <button type="button" id="set-watch-date-button" class="btn btn-primary" data-movieid="@Model.Id">Set Watched</button>
+            </div>
+            @if (Model.UserIsAdmin)
+            {
+                <div class="clear-watch-button-container col-12">
+                    <button type="button" id="clear-watch-dates" class="btn btn-danger" data-movieid="@Model.Id">Clear Watch Dates</button>
+                </div>
+            }
         </dl>
         <p class="overview">
             @Model.Overview    
@@ -127,7 +136,7 @@
                         {
                             <input id="update-rating-input-@(rating.UserId)" type="number" placeholder="Rating" data-userid="@rating.UserId" data-movieid="@Model.Id" value="@(rating.IsRated ? rating.Rating!.Value : "")"/>
                             <div id="validation-@(rating.UserId)" class="validation not-shown"></div>
-                            <button id="update-rating-button-@rating.UserId)" type="button" class="update-rating-button not-loading" data-userid="@rating.UserId" data-movieid="@Model.Id">
+                            <button id="update-rating-button-@rating.UserId)" type="button" class="btn btn-primary update-rating-button not-loading" data-userid="@rating.UserId" data-movieid="@Model.Id">
                                 <span class="text">Update Rating</span>
                                 <span class="spinner-border spinner-border-sm"></span>
                             </button>
@@ -154,3 +163,28 @@
 <template id="search-result-spinner-template">
     <img src="/img/spinner.png" alt="spinner" class="spinner"/>
 </template>
+
+<div class="modal" id="set-watch-date-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Set Watch Date</h2>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <fieldset>
+                        <label for="set-watch-date-input" class="form-label">Date</label>
+                        <input id="set-watch-date-input" type="date" name="set-watch-date-input" class="form-control" required/>
+                    </fieldset>    
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary not-loading">
+                    <span class="text">Set Watch Date</span>
+                    <span class="spinner-border spinner-border-sm"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
