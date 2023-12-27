@@ -42,6 +42,7 @@ builder.Services
     {
         options.Conventions.AuthorizePage("/SignIn", policy: "Member");
         options.Conventions.AuthorizePage("/Privacy", policy: "Member");
+        options.Conventions.AuthorizePage("/Picker", policy: "Member");
         
         options.Conventions.AuthorizeFolder("/Admin", policy: "Admin");
         options.Conventions.AuthorizeFolder("/Profile", policy: "Member");
@@ -55,6 +56,8 @@ builder.Services.AddSingleton<IImageUrlProvider<IGraphUser>, ProfileImageProvide
 builder.Services.AddSingleton<ISuperUserIdentifier, SuperUserIdentifier>();
 builder.Services.AddSingleton<IAuthorizationHandler, AdminAuthorizationPolicy>();
 builder.Services.AddSingleton<IAuthorizationHandler, MemberAuthorizationPolicy>();
+builder.Services.AddScoped<ISeededRandom, LehmerRandomGenerator>();
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Admin", policy =>
