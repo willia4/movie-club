@@ -6,30 +6,31 @@
     ViewData["Title"] = "Movie Picker 9000";
 }
 
-@{
-    async Task RenderMovie(MovieDocument movie)
-    {
-        <div class="movie">
-            <div class="title">@movie.Title</div>
-        </div>
-    }
-}
+@* @{ *@
+@*     async Task RenderMovie(MovieDocument movie) *@
+@*     { *@
+@*         <div class="movie"> *@
+@*             <div class="title">@movie.Title</div> *@
+@*         </div> *@
+@*     } *@
+@* } *@
 <div>
     @if (Model.Choices.Count >= 1)
     {
         <h3>First Choice</h3>
-        await RenderMovie(Model.Choices[0]);
+        <partial name="_MovieListMoviePartial" model="@Model.Choices[0]"/>
+        
     }
     
     @if (Model.Choices.Count >= 2)
     {
         <h3>Second Choice</h3>
-        await RenderMovie(Model.Choices[1]);
+        <partial name="_MovieListMoviePartial" model="@Model.Choices[1]"/>
     }
     
     @if (Model.Choices.Count >= 3)
     {
         <h3>Third Choice</h3>
-        await RenderMovie(Model.Choices[2]);
+        <partial name="_MovieListMoviePartial" model="@Model.Choices[2]"/>
     }
 </div>
