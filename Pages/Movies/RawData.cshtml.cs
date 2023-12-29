@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Azure.Cosmos.Linq;
+using Microsoft.VisualBasic;
 using zinfandel_movie_club.Data;
 using zinfandel_movie_club.Data.Models;
 
@@ -48,8 +49,12 @@ public class RawData : PageModel
         var allMovies = (await moviesTask).ValueOrThrow();
         var allRatings = (await ratingsTask);
 
+        var watchedMovies = allMovies.Where(m => m.MostRecentWatchedDate.HasValue);
+        var unwatchedMovies = allMovies.Where(m => !m.MostRecentWatchedDate.HasValue);
+        
         DataRows =
-            allMovies
+            watchedMovies.OrderBy(m => m.MostRecentWatchedDate).ThenBy(m => m.DateAdded).ThenBy(m => m.Title)
+                .Concat(unwatchedMovies.OrderBy(m => m.DateAdded).ThenBy(m => m.Title))
                 .Select(m =>
                 {
                     var ratingsForMovie = allRatings.Where(r => r.MovieId == m.id!).ToImmutableList();
@@ -61,6 +66,7 @@ public class RawData : PageModel
                     var averageRating = ratingsForMovie.AverageRating().First();                    
                     return new DataRow(m, ratingsByUser, OurAverageRating: averageRating.HasValue ? averageRating.Value.ToString("N2") : "");
                 })
+                .OrderBy(r => r.WatchDate)
                 .ToImmutableList();
 
         Users =
