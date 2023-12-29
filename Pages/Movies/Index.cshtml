@@ -89,14 +89,14 @@
         <div class="tab-pane show active" id="tabs-unwatched" role="tabpanel">
             @foreach (var m in Model.UnwatchedMovies)
             {
-                await RenderMovie(watched: false, movie: m);
+                <partial name="_MovieListMoviePartial" model="m"/>
             }
         </div>
         
         <div class="tab-pane" id="tabs-watched" role="tabpanel">
             @foreach (var m in Model.WatchedMovies)
             {
-                await RenderMovie(watched: true, movie: m);
+                <partial name="_MovieListMoviePartial" model="m"/>
             }
         </div>
     </div>

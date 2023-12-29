@@ -10,17 +10,21 @@ public class Picker : PageModel
 {
     private readonly ISeededRandom _random;
     private readonly ICosmosDocumentManager<MovieDocument> _movieManager;
+    private readonly IMovieRatingsManager _ratingsManager;
     
-    public Picker(ISeededRandom random, ICosmosDocumentManager<MovieDocument> movieManager)
+    public Picker(ISeededRandom random, ICosmosDocumentManager<MovieDocument> movieManager, IMovieRatingsManager ratingsManager)
     {
         _random = random;
         _movieManager = movieManager;
+        _ratingsManager = ratingsManager;
     }
     
-    public ImmutableList<MovieDocument> Choices = ImmutableList<MovieDocument>.Empty;
-
+    public ImmutableList<MovieListMoviePartialModel> Choices = ImmutableList<MovieListMoviePartialModel>.Empty;
+    public string CurrentUserId;
+    
     public async Task OnGet(CancellationToken cancellationToken)
     {
+        CurrentUserId = User.NameIdentifier();
         var query = new QueryDefinition(
 $"""
 SELECT * FROM root r 
@@ -41,19 +45,23 @@ SELECT * FROM root r
         }
         else if (movies.Count == 1)
         {
-            Choices = movies;
+            //Choices = await GetRatingsForMovies(movies, cancellationToken);
+            Choices = await MovieListMoviePartialModel.MakeModelsForMovies(_ratingsManager, HttpContext, movies, cancellationToken);
             return;
         }
 
+        var pickedMovies = new List<MovieDocument>();
         var lastIndex = -1;
-        while (movies.Count > 0 && Choices.Count < 3)
+        while (movies.Count > 0 && pickedMovies.Count < 3)
         {
             var hash = HashCode.Combine(movies.Count, movies.First().id, movies.Last().id, lastIndex);
 
             var nextIndex = _random.NextInRange(hash, 0, (movies.Count - 1));
-            Choices = Choices.Add(movies[nextIndex]);
+            pickedMovies.Add(movies[nextIndex]);
             movies = movies.RemoveAt(nextIndex);
             lastIndex = nextIndex;
         }
+
+        Choices = await MovieListMoviePartialModel.MakeModelsForMovies(_ratingsManager, HttpContext, pickedMovies, cancellationToken);
     }
 }

@@ -17,8 +17,8 @@ public class Index : PageModel
         _userManager = userManager;
     }
 
-    public ImmutableList<MovieDocument> UnwatchedMovies = ImmutableList<MovieDocument>.Empty;
-    public ImmutableList<MovieDocument> WatchedMovies = ImmutableList<MovieDocument>.Empty;
+    public ImmutableList<MovieListMoviePartialModel> UnwatchedMovies = ImmutableList<MovieListMoviePartialModel>.Empty;
+    public ImmutableList<MovieListMoviePartialModel> WatchedMovies = ImmutableList<MovieListMoviePartialModel>.Empty;
     
     public ImmutableDictionary<string, string> OurRatingForMovies = ImmutableDictionary<string, string>.Empty;
     public ImmutableDictionary<string, string> MyRatingsForMovies = ImmutableDictionary<string, string>.Empty;
@@ -72,19 +72,21 @@ public class Index : PageModel
                         return rating is not { Rating: not null } ? "Not Yet" : rating.Rating.Value.ToString("N2");
                     });
             
-        UnwatchedMovies = 
+        var unwatchedMovies = 
             movies
                 .Where(m => m.WatchedDates.Count == 0)
                 .OrderBy(m => m.DateAdded)
                 .ThenBy(m => m.Title)
                 .ToImmutableList();
+        UnwatchedMovies = await MovieListMoviePartialModel.MakeModelsForMovies(_ratingsManager, HttpContext, unwatchedMovies, cancellationToken);
         
-        WatchedMovies = 
+        var watchedMovies = 
             movies
                 .Where(m => m.WatchedDates.Count > 0)
                 .OrderByDescending(m => m.MostRecentWatchedDate)
                 .ThenBy(m => m.DateAdded)
                 .ThenBy(m => m.Title)
                 .ToImmutableList();
+        WatchedMovies = await MovieListMoviePartialModel.MakeModelsForMovies(_ratingsManager, HttpContext, watchedMovies, cancellationToken);
     }
 }

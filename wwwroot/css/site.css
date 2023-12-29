@@ -53,3 +53,28 @@ nav .dropdown-menu .dropdown-item {
 nav .profile-picture-nav .dropdown-toggle::after {
   display: none;
 }
+
+.movie-partial .movie-title {
+  font-size: 175%;
+  font-weight: bold;
+}
+
+.movie-partial .movie-title .release-date {
+  font-size: 60%;
+  font-weight: normal;
+  font-style: italic;
+}
+
+.movie-partial .detail-heading {
+  font-weight: bold;
+}
+
+.movie-partial .our-rating-container {
+  /*background-color: var(--alternate-bright-color);*/
+  background-color: #f3da6854;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 3px;
+  padding-right: 3px;
+  margin-right: 3px;
+}
