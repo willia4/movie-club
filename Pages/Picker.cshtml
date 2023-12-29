@@ -1,0 +1,36 @@
+﻿@page
+@using zinfandel_movie_club.Data.Models
+@model zinfandel_movie_club.Pages.Picker
+
+@{
+    ViewData["Title"] = "Movie Picker 9000";
+}
+
+@* @{ *@
+@*     async Task RenderMovie(MovieDocument movie) *@
+@*     { *@
+@*         <div class="movie"> *@
+@*             <div class="title">@movie.Title</div> *@
+@*         </div> *@
+@*     } *@
+@* } *@
+<div>
+    @if (Model.Choices.Count >= 1)
+    {
+        <h3 class="mt-2">First Choice</h3>
+        <partial name="_MovieListMoviePartial" model="@Model.Choices[0]"/>
+        
+    }
+    
+    @if (Model.Choices.Count >= 2)
+    {
+        <h3 class="mt-5">Second Choice</h3>
+        <partial name="_MovieListMoviePartial" model="@Model.Choices[1]"/>
+    }
+    
+    @if (Model.Choices.Count >= 3)
+    {
+        <h3 class="mt-5">Third Choice</h3>
+        <partial name="_MovieListMoviePartial" model="@Model.Choices[2]"/>
+    }
+</div>

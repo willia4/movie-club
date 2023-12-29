@@ -1,0 +1,55 @@
+﻿@using zinfandel_movie_club.Data.Models
+@using zinfandel_movie_club.Data
+@model MovieListMoviePartialModel
+@inject IImageUrlProvider<MovieDocument> coverProvider
+
+@{
+    var className = Model.Watched ? "movie-partial movie-watched" : "movie-partial movie-unwatched";
+    string TranslateDecimal(decimal? d) => d.HasValue ? d.Value.ToString("N2") : "??";
+}
+<div class="@className row mb-2">
+    <div class="col-2 movie-cover">
+        <img class="img-fluid" src="@coverProvider.ImageUri(Model.Movie, ImageSize.Size128)" alt="cover for @Model.Title"/>
+    </div>
+    <div class="col movie-details">
+        <div class="movie-title"><a asp-page="/Movies/View/Index" asp-route-id="@Model.Movie.SlugId()">@Model.Title.Or(@Model.Movie.id)</a>
+            @if (!string.IsNullOrWhiteSpace(Model.Movie.ReleaseDate))
+            {
+                <span class="release-date">@Model.Movie.ReleaseDate</span>
+            }
+        </div>
+        <div class="movie-ratings">
+            <div>
+                <span class="my-rating-container">
+                    <span class="detail-heading my-rating">Me:</span>
+                    <span class="detail-value my-rating">@Model.CurrentUserRating</span>
+                </span>
+                <span class="our-rating-container">
+                    <span class="detail-heading our-rating">Us:</span>
+                    <span class="detail-value our-rating">@Model.Ratings.AverageRating().Second()</span>
+                </span>
+                @if (Model.Movie.RottenTomatoesCriticScore.HasValue || Model.Movie.RottenTomatoesUserScore.HasValue)
+                {
+                    <span class="detail-heading">RT Critics:</span>
+                    <span class="detail-value">@TranslateDecimal(Model.Movie.RottenTomatoesCriticScore)</span>
+                    <span class="detail-heading">RT Users:</span>
+                    <span class="detail-value">@TranslateDecimal(Model.Movie.RottenTomatoesUserScore)</span>
+                }
+            </div>
+            @if (Model.Movie.RuntimeMinutes.HasValue)
+            {
+                <div>
+                    <span class="detail-heading">Runtime:</span>
+                    <span class="detail-value">@Model.Movie.RuntimeMinutes minutes</span>
+                </div>
+            }
+            @if (@Model.Watched && Model.Movie.MostRecentWatchedDate.HasValue)
+            {
+                <div>
+                    <span class="detail-heading">Watched: </span>
+                    <span class="detail-value">@Model.Movie.MostRecentWatchedDate.Value.ToString("o")</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -9,15 +9,16 @@ public class Index : PageModel
 {
     private readonly ICosmosDocumentManager<MovieDocument> _dataManager;
     private readonly IMovieRatingsManager _ratingsManager;
-
-    public Index(ICosmosDocumentManager<MovieDocument> dataManager, IMovieRatingsManager ratingsManager)
+    private readonly IGraphUserManager _userManager;
+    public Index(ICosmosDocumentManager<MovieDocument> dataManager, IMovieRatingsManager ratingsManager, IGraphUserManager userManager)
     {
         _dataManager = dataManager;
         _ratingsManager = ratingsManager;
+        _userManager = userManager;
     }
 
-    public ImmutableList<MovieDocument> UnwatchedMovies = ImmutableList<MovieDocument>.Empty;
-    public ImmutableList<MovieDocument> WatchedMovies = ImmutableList<MovieDocument>.Empty;
+    public ImmutableList<MovieListMoviePartialModel> UnwatchedMovies = ImmutableList<MovieListMoviePartialModel>.Empty;
+    public ImmutableList<MovieListMoviePartialModel> WatchedMovies = ImmutableList<MovieListMoviePartialModel>.Empty;
     
     public ImmutableDictionary<string, string> OurRatingForMovies = ImmutableDictionary<string, string>.Empty;
     public ImmutableDictionary<string, string> MyRatingsForMovies = ImmutableDictionary<string, string>.Empty;
@@ -27,39 +28,65 @@ public class Index : PageModel
         var currentUserId = User.NameIdentifier();
         var moviesTask = _dataManager.QueryDocuments(cancellationToken: cancellationToken);
         var ratingsTask = _ratingsManager.GetAllRatings(HttpContext, cancellationToken);
-
-        await Task.WhenAll(new Task[] { moviesTask, ratingsTask });
+        var membersTask = _userManager.GetMembersAsync(HttpContext, cancellationToken);
+        
+        await Task.WhenAll(new Task[] { moviesTask, ratingsTask, membersTask });
             
         var movies = (await moviesTask).ValueOrThrow();
-        var allRatings = (await ratingsTask).GroupBy(r => r.MovieId).ToImmutableDictionary(g => g.Key, g => g.ToImmutableList());
+        var ratings = await ratingsTask;
+        var members = await membersTask;
+        
+        var missingMovieRatings = movies.Where(m => !ratings.Any(r => r.MovieId == m.id));
+        var allRatings =
+            ratings
+                .Concat(
+                    missingMovieRatings.SelectMany(m =>
+                    {
+                        return members.Select(member => new UnratedMovieRating(
+                            IsCurrentUser: member.NameIdentifier == currentUserId,
+                            User: member,
+                            MovieId: m.id!));
+                    })
+                )
+                .ToImmutableList();
+
+        var ratingsForMovies =
+            allRatings
+                .GroupBy(r => r.MovieId)
+                .ToImmutableDictionary(g => g.Key, g => g.ToImmutableList());
 
         OurRatingForMovies =
-            movies
+            ratingsForMovies
                 .ToImmutableDictionary(
-                    m => m.id!,
-                    m => allRatings.GetValueOrDefault(m.id!, ImmutableList<MovieRating>.Empty).AverageRating().Second());
+                    kvp => kvp.Key,
+                    kvp => kvp.Value.AverageRating().Second());
 
-        var myRatings = allRatings.Values.SelectMany(v => v).Where(r => r.UserId == currentUserId);
-        
+
         MyRatingsForMovies =
-            allRatings
-                .Values
-                .SelectMany(v => v.Where(r => r.UserId == currentUserId))
-                .ToImmutableDictionary(r => r.MovieId, r => r.Rating.HasValue ? r.Rating.Value.ToString("N2") : "Not Yet");
+            ratingsForMovies
+                .ToImmutableDictionary(
+                    kvp => kvp.Key,
+                    kvp =>
+                    {
+                        var rating = kvp.Value.FirstOrDefault(r => r.UserId == currentUserId);
+                        return rating is not { Rating: not null } ? "Not Yet" : rating.Rating.Value.ToString("N2");
+                    });
             
-        UnwatchedMovies = 
+        var unwatchedMovies = 
             movies
                 .Where(m => m.WatchedDates.Count == 0)
                 .OrderBy(m => m.DateAdded)
                 .ThenBy(m => m.Title)
                 .ToImmutableList();
+        UnwatchedMovies = await MovieListMoviePartialModel.MakeModelsForMovies(_ratingsManager, HttpContext, unwatchedMovies, cancellationToken);
         
-        WatchedMovies = 
+        var watchedMovies = 
             movies
                 .Where(m => m.WatchedDates.Count > 0)
                 .OrderByDescending(m => m.MostRecentWatchedDate)
                 .ThenBy(m => m.DateAdded)
                 .ThenBy(m => m.Title)
                 .ToImmutableList();
+        WatchedMovies = await MovieListMoviePartialModel.MakeModelsForMovies(_ratingsManager, HttpContext, watchedMovies, cancellationToken);
     }
 }
