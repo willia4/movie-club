@@ -266,22 +266,20 @@ public class ImportResult : IActionResult
         var res = context.HttpContext.Response;
         res.Headers.ContentType = "text/plain";
 
-        await ClearExistingMovies(res);
-        await ClearExistingRatings(res);
-
         var data = await GetData();
-        await res.WriteAsync($"Found {data.Count} records to import\n");
-
-        foreach (var row in data)
+        var allMovies = 
+            (await _movieManager.GetAllDocuments(default)).ValueOrThrow();
+        
+        foreach (var row in data.Where(d => !string.IsNullOrWhiteSpace(d.WatchDate)))
         {
-            try
+            if (DateOnly.TryParse(row.WatchDate, out var watchDate))
             {
-                await ImportDataRow(res, row);
-                await Task.Delay(TimeSpan.FromSeconds(3));
-            }
-            catch (Exception ex)
-            {
-                await res.WriteAsync("Uncaught exception: " + ex.Message + "\n");
+                var m = allMovies.FirstOrDefault(m => !string.IsNullOrWhiteSpace(m.TmdbId) && int.Parse(m.TmdbId!) == row.TMDBID);
+                if (m == null) continue;
+                m.WatchedDates.Add(watchDate);
+                m.MostRecentWatchedDate = watchDate;
+                await res.WriteAsync($"Updating {m.Title}\n");
+                await _movieManager.UpsertDocument(m, default);
             }
         }
 
