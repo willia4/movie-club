@@ -1,0 +1,122 @@
+Title,WatchDate,PandaRating,TimRating,BranRating,JamesRating,AverageRating,RottenTomatoesCritics,RottenTomatoesAudience,Runtime,SponsoredByPanda,SponsoredByTim,SponsoredByBran,SponsoredByJames,SponsoredBy,TMDBID
+Armageddon,1/20/2022,7.00,,1.00,6.00,,3.80,7.30,151,,,,James,"Panda, Tim, Bran, James",95
+Star Trek: The Motion Picture,1/27/2022,6.00,,7.00,7.00,,4.40,4.20,131,Panda,,,James,"Panda, Tim, Bran, James",152
+Final Fantasy VIi: Advent Children,2/3/2022,4.00,,1.00,6.00,,5.00,8.40,126,Panda,,,James,"Panda, Tim, Bran, James",647
+Akira,2/10/2022,10.00,,3.00,5.00,,9.00,9.00,124,Panda,,,James,"Panda, Tim, Bran, James",149
+Fargo,2/17/2022,10.00,,6.00,10.00,,9.40,9.30,98,Panda,,,James,"Panda, Tim, Bran, James",60622
+Hackers,2/24/2022,5.00,5.00,3.00,7.00,,3.10,6.80,105,Panda,,,,"Panda, Tim, Bran, James",10428
+The Prestige,3/3/2022,8.00,,9.00,9.00,,7.60,9.20,130,,,,James,"Panda, Tim, Bran, James",1124
+Get Shorty,3/10/2022,8.00,8.00,8.00,9.00,4.67,8.80,7.00,105,Panda,,,,James,8012
+Legally Blonde,3/17/2022,5.00,,7.00,4.50,6.67,7.00,7.20,96,Panda,,,James,"Panda, James",8835
+Clueless,3/24/2022,6.50,,7.00,6.00,3.67,8.10,7.60,97,,,Bran,James,"Panda, James",9603
+Let The Right One In,3/31/2022,7.00,,4.50,1.75,6.00,9.80,9.00,114,Panda,,,James,"Panda, James",13310
+Luca,4/14/2022,8.50,,10.00,9.00,8.67,9.10,8.60,95,Panda,,,James,"Panda, James",508943
+But I'm a Cheerleader,4/20/2022,8.00,8.00,5.00,6.50,5.00,4.10,7.40,85,Panda,,,,Panda,20770
+The Batman (2022),4/21/2022,6.50,7.00,7.00,7.00,8.67,8.60,8.70,176,Panda,,,James,James,414906
+A Fish Called Wanda,5/5/2022,8.50,8.00,9.00,8.40,8.25,9.60,8.40,108,,,Bran,James,Panda,623
+Free Guy,5/19/2022,5.00,7.50,7.50,6.50,5.50,8.00,9.40,115,Panda,,Bran,,"Panda, James",550988
+The Matrix,5/26/2022,9.50,,9.50,9.50,6.50,8.80,8.50,136,Panda,,,James,"Bran, James",603
+Doctor Strange in the Multiverse of Madness,6/30/2022,8.00,,,7.70,4.42,7.40,8.50,126,,,,James,"Panda, James",453395
+Independence Day,7/7/2022,6.50,6.50,7.00,7.20,9.17,6.80,7.50,145,Panda,,,James,"Panda, James",602
+Paris When it Sizzles,7/14/2022,7.00,7.00,9.75,9.98,6.88,5.00,6.60,110,,,Bran,James,Panda,22829
+Party Monster,7/21/2022,9.99,6.00,1.00,3.50,6.88,2.90,7.50,98,Panda,,,,"Panda, James",1415
+The Bob's Burgers Movie,8/25/2022,9.50,7.50,9.50,9.50,8.48,8.80,8.90,102,,,Bran,James,"Bran, James",504827
+Gosford Park,9/1/2022,9.00,,9.00,7.80,6.63,8.70,7.80,137,,,,James,"Panda, Bran",5279
+Jurassic Park,9/8/2022,9.00,,8.50,8.50,9.50,9.20,9.10,127,Panda,,,James,"Panda, James",329
+Cast Away,9/22/2022,4.00,5.00,4.00,1.30,7.85,8.90,8.40,143,Panda,,,James,James,8358
+The Addams Family (1991),10/6/2022,8.50,8.00,8.50,7.50,6.80,6.50,6.60,99,Panda,,,James,"Panda, James",2907
+Ghostbusters (1984),10/13/2022,8.00,7.00,6.50,8.50,8.43,9.70,8.80,105,Panda,,,James,"Bran, James",620
+Addams Family Values,10/19/2022,8.50,,8.50,7.00,5.12,7.40,6.30,94,panda,,Bran,,Panda,2758
+The Mummy (1999),10/27/2022,8.00,8.00,8.75,8.50,9.00,6.10,7.50,124,Panda,,,James,"Bran, James",564
+Hocus Pocus 2,11/3/2022,3.00,6.00,6.00,2.00,8.60,6.40,5.10,103,,Tim,,,James,642885
+Interstellar,11/10/2022,9.00,8.50,9.00,8.60,8.67,7.20,8.60,169,Panda,,,James,"Panda, James",157336
+The Muppet Christmas Carol,12/1/2022,10.00,8.00,10.00,10.00,3.58,7.50,8.60,85,Panda,,Bran,,"Panda, James",10437
+Knives Out,1/5/2023,8.00,7.50,9.75,8.90,8.13,9.70,9.20,130,,,Bran,James,"Panda, James",546554
+Glass Onion,1/19/2023,8.50,8.00,9.50,9.00,7.50,9.30,9.30,139,,,Bran,James,"Panda, James",661374
+Star Trek II: The Wrath of Khan,1/26/2023,7.50,7.00,7.75,9.50,8.00,8.60,9.00,113,Panda,,,James,"Panda, Bran",154
+Looper,2/9/2023,7.50,5.00,6.25,8.75,8.31,9.30,8.20,119,Panda,,,James,"Panda, James",59967
+Murder on the Orient Express (2017),3/2/2023,8.00,7.00,8.75,8.30,4.25,6.10,5.40,114,Panda,,Bran,James,Tim,392044
+Murder on the Orient Express (1974),3/16/2023,6.00,,7.35,5.50,8.78,9.00,7.80,128,Panda,,Bran,James,"Panda, James",4176
+Anastasia,3/23/2023,6.00,5.00,7.50,7.80,9.50,8.60,7.70,94,,,,James,"Panda, Bran",9444
+Eternal Sunshine of the Spotless Mind,3/30/2023,8.00,7.00,5.00,8.30,8.54,9.20,9.40,108,,Tim,,,"Bran, James",38
+Star Trek III: The Search for Spock,4/6/2023,8.00,6.50,7.00,7.40,8.75,7.90,6.10,105,Panda,,,James,"Bran, James",157
+"Crouching Tiger, Hidden Dragon",4/13/2023,9.00,9.00,8.50,4.50,7.94,9.70,8.60,121,,,Bran,,"Panda, James",146
+Emperor's New Groove,9/7/2023,8.00,6.00,9.50,9.50,6.88,8.60,8.30,78,,,Bran,,"Panda, James",11688
+Mad Max: Fury Road,9/14/2023,7.50,7.00,2.50,4.50,8.01,9.70,8.60,120,,,,James,"Panda, Bran, James",76341
+Labyrinth,9/28/2023,6.50,6.50,8.50,8.00,6.28,7.50,8.60,101,Panda,,Bran,James,"Panda, Bran, James",13597
+Werewolves Within,11/2/2023,6.50,,6.50,6.50,6.58,8.60,8.10,97,,,,James,James,800497
+Kiss Kiss Bang Bang,11/30/2023,,,2.00,4.50,7.08,8.60,8.70,103,,,,James,Tim,5236
+Secret of Kells,,,,,,7.23,9.00,8.50,75,,,Bran,,"Panda, James",26963
+Rope (1948),,,,,,7.75,9.40,9.00,80,,,,James,Bran,1580
+Run Lola Run,,,,,,8.25,9.30,9.00,80,,,,James,Bran,104
+Best in Show,,,,,,5.38,9.30,8.80,90,Panda,,,,James,13785
+Harold & Maude,,,,,,7.38,8.60,9.30,91,Panda,,,,"Panda, Bran, James",343
+Miss Pettigrew Lives for a Day,,,,,,6.50,7.80,7.10,92,,,Bran,,James,12178
+Saved!,,,,,,3.25,6.10,7.80,92,Panda,,,,James,13193
+Little Shop of Horrors,,,,,,,9.00,7.90,94,Panda,,,James,Bran,10776
+Dr. Strangelove,,,,,,,9.80,9.40,95,Panda,,,James,James,935
+Mean Girls,,,,,,,8.40,6.60,97,,,Bran,James,James,10625
+Human Traffic,,,,,,,5.90,8.90,99,Panda,,,,Panda,11129
+Russian Ark,,,,,,,8.90,8.00,99,Panda,,,James,Panda,16646
+The Maltese Falcon (1941),,,,,,,10.00,9.10,100,Panda,,,James,Bran,963
+Hunt for the Wilderpeople,,,,,,,9.70,9.10,101,,,Bran,,Panda,371645
+Notorious (1946),,,,,,,9.60,9.10,102,,,,James,"Panda, James",303
+Snatch,,,,,,,7.40,9.30,102,Panda,,,James,"Panda, James",107
+Wolfwalkers,,,,,,,9.90,9.80,103,,,Bran,,"Bran, James",441130
+It Happened One Night,,,,,,,9.90,9.30,105,,,,James,Panda,3078
+Lock Stock and Two Smoking Barrels,,,,,,,7.40,9.30,107,Panda,,,James,"Panda, James",100
+The Unbearable Weight of Massive Talent,,,,,,,8.70,8.70,107,,,,James,"Panda, James",648579
+Ex Machina,,,,,,,9.20,8.60,108,Panda,,,James,Bran,264660
+Miss Congeniality,,,,,,,4.10,6.90,109,,,Bran,,James,1493
+Ocean�s 8,,,,,,,6.80,4.50,110,,,,James,"Panda, James",402900
+French Kiss,,,,,,,5.00,7.40,111,,,Bran,,Bran,397
+Philadelphia Story,,,,,,,10.00,9.30,112,,,Bran,James,James,981
+Baby Driver,,,,,,,9.20,8.60,113,Panda,,,James,"Panda, James",339403
+Charade,,,,,,,9.40,9.20,113,,,Bran,James,James,4808
+Kingpin,,,,,,,5.00,6.90,114,Panda,,,James,"Panda, James",11543
+WarGames,,,,,,,9.30,7.60,114,Panda,,,James,Bran,860
+Ocean�s 11 (2001),,,,,,,8.30,8.00,116,,,,James,James,161
+Stargate (1994),,,,,,,5.30,7.30,116,,,,James,Bran,2164
+A Room With a View,,,,,,,10.00,8.50,117,,,Bran,James,"Bran, James",11257
+Guillermo del Toro's Pinocchio (2022),,,,,,,9.80,8.40,117,,,,James,"Panda, James",555604
+Birdman,,,,,,,9.10,7.80,119,Panda,,,James,"Bran, James",194662
+Only Yesterday,,,,,,,10.00,8.00,119,,,,James,"Panda, James",15080
+Hot Fuzz,,,,,,,9.10,8.90,121,panda,tim,,,"Panda, James",4638
+Ocean�s 13,,,,,,,7.00,7.50,122,,,,James,James,298
+Pleasantville,,,,,,,8.50,7.90,124,Panda,,,James,James,2657
+Cabaret,,,,,,,9.20,8.70,124,Panda,Tim,,,"Bran, James",10784
+Ocean�s 12,,,,,,,5.50,6.00,125,,,,James,James,163
+Sneakers,,,,,,,7.90,8.00,126,,,,James,"Panda, James",2322
+Death on the Nile (2022),,,,,,,6.20,8.20,127,,,Bran,,James,505026
+A League of Their Own,,,,,,,8.00,8.40,128,Panda,,,James,"Panda, Tim",11287
+Brazil,,,,,,,9.80,9.00,132,Panda,,,James,James,68
+Speed Racer,,,,,,,4.10,6.00,135,,,,James,"Panda, James",7459
+Fight Club,,,,,,,7.90,9.60,139,,Tim,,,"Panda, Tim",550
+The Shawshank Redemption,,,,,,,9.10,9.80,142,Panda,,,James,James,278
+AI - Artificial intelligence,,,,,,,7.50,6.40,146,Panda,,,James,James,644
+Army of the Dead (2021),,,,,,,6.70,7.50,148,Panda,,,James,Bran,503736
+2001: A Space Odyssey,,,,,,,9.20,8.90,149,Panda,,,James,"Panda, James",62
+Song of the Sea,,,,,,,9.90,9.20,93,,,Bran,,"Panda, James",110416
+Star Trek (2009),,,,,,,9.40,9.10,127,Panda,,,James,James,13475
+Star Trek IV: The Voyage Home,,,,,,,8.20,8.10,119,Panda,,,James,Tim,168
+Star Trek V: The Final Frontier,,,,,,,2.20,2.40,107,Panda,,,James,"Panda, James",172
+Star Trek VI: The Undiscovered Country,,,,,,,8.20,8.30,110,Panda,,,James,"Panda, James",174
+Star Trek: Beyond,,,,,,,8.60,8.00,122,Panda,,,James,"Panda, James",188927
+Star Trek: First Contact,,,,,,,9.20,8.90,111,Panda,,,James,"Panda, James",199
+Star Trek: Generations,,,,,,,4.70,5.70,118,Panda,,,James,Bran,193
+Star Trek: Insurrection,,,,,,,5.40,4.40,103,Panda,,,James,"Panda, James",200
+Star Trek: Into Darkness,,,,,,,8.40,8.90,132,Panda,,,James,"Panda, James",54138
+Star Trek: Nemesis,,,,,,,3.80,4.90,116,Panda,,,James,"Panda, James",201
+The Adventures of Baron Munchausen,,,,,,,9.20,8.20,126,,,Bran,,"Panda, James",14506
+The Apartment (1960),,,,,,,9.30,9.40,125,,,,James,"Panda, James",284
+The Conversation (1974),,,,,,,9.70,8.90,113,,,,James,"Panda, James",592
+The Core,,,,,,,4.00,3.30,135,,,,James,"Panda, James",9341
+The Green Knight,,,,,,,8.90,5.00,130,Panda,,,James,"Panda, James",559907
+The Green Mile,,,,,,,7.90,9.40,189,Panda,,,James,"Panda, James",497
+The Last of Shelia,,,,,,,8.70,8.60,120,,,,James,"Panda, James",26331
+The Quick and the Dead,,,,,,,5.80,5.30,108,,,Bran,James,Bran,12106
+The Dark Crystal,,,,,,,7.70,8.10,93,,,,James,James,11639
+The Blues Brothers (1980),,,,,,,7.30,9.20,133,,,,James,James,525
+It's A Wonderful Life,,,,,,,9.40,9.50,130,,,,,James,1585
+Meet Me In St. Louis,,,,,,,10.00,8.70,113,,,,,"Panda, James",909
+Pacific Rim,,,,,,,7.20,7.70,131,,,,,"Panda, James",68726
