@@ -66,7 +66,6 @@ public class RawData : PageModel
                     var averageRating = ratingsForMovie.AverageRating().First();                    
                     return new DataRow(m, ratingsByUser, OurAverageRating: averageRating.HasValue ? averageRating.Value.ToString("N2") : "");
                 })
-                .OrderBy(r => r.WatchDate)
                 .ToImmutableList();
 
         Users =
