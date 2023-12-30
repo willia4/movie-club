@@ -56,7 +56,6 @@ builder.Services.AddSingleton<IImageUrlProvider<IGraphUser>, ProfileImageProvide
 builder.Services.AddSingleton<ISuperUserIdentifier, SuperUserIdentifier>();
 builder.Services.AddSingleton<IAuthorizationHandler, AdminAuthorizationPolicy>();
 builder.Services.AddSingleton<IAuthorizationHandler, MemberAuthorizationPolicy>();
-builder.Services.AddScoped<ISeededRandom, LehmerRandomGenerator>();
 
 builder.Services.AddAuthorization(options =>
 {

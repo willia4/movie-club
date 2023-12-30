@@ -3,18 +3,17 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Azure.Cosmos;
 using zinfandel_movie_club.Data;
 using zinfandel_movie_club.Data.Models;
+using zinfandel_movie_club.Exceptions;
 
 namespace zinfandel_movie_club.Pages;
 
 public class Picker : PageModel
 {
-    private readonly ISeededRandom _random;
     private readonly ICosmosDocumentManager<MovieDocument> _movieManager;
     private readonly IMovieRatingsManager _ratingsManager;
     
-    public Picker(ISeededRandom random, ICosmosDocumentManager<MovieDocument> movieManager, IMovieRatingsManager ratingsManager)
+    public Picker(ICosmosDocumentManager<MovieDocument> movieManager, IMovieRatingsManager ratingsManager)
     {
-        _random = random;
         _movieManager = movieManager;
         _ratingsManager = ratingsManager;
     }
@@ -24,7 +23,7 @@ public class Picker : PageModel
     
     public async Task OnGet(CancellationToken cancellationToken)
     {
-        CurrentUserId = User.NameIdentifier();
+        CurrentUserId = User.NameIdentifier() ?? throw new UnauthorizedException();
         var query = new QueryDefinition(
 $"""
 SELECT * FROM root r 
@@ -50,16 +49,16 @@ SELECT * FROM root r
             return;
         }
 
+        var seed = HashCode.Combine(movies.Count, movies.First().id, movies.Last().id);
+        var random = new Random(seed);
+        
         var pickedMovies = new List<MovieDocument>();
-        var lastIndex = -1;
         while (movies.Count > 0 && pickedMovies.Count < 3)
         {
-            var hash = HashCode.Combine(movies.Count, movies.First().id, movies.Last().id, lastIndex);
+            var nextIndex = random.Next(0, (movies.Count - 1));
 
-            var nextIndex = _random.NextInRange(hash, 0, (movies.Count - 1));
             pickedMovies.Add(movies[nextIndex]);
             movies = movies.RemoveAt(nextIndex);
-            lastIndex = nextIndex;
         }
 
         Choices = await MovieListMoviePartialModel.MakeModelsForMovies(_ratingsManager, HttpContext, pickedMovies, cancellationToken);
