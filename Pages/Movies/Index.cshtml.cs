@@ -27,28 +27,14 @@ public class Index : PageModel
     {
         var currentUserId = User.NameIdentifier();
         var moviesTask = _dataManager.QueryDocuments(cancellationToken: cancellationToken);
-        var ratingsTask = _ratingsManager.GetAllRatings(HttpContext, cancellationToken);
         var membersTask = _userManager.GetMembersAsync(HttpContext, cancellationToken);
         
-        await Task.WhenAll(new Task[] { moviesTask, ratingsTask, membersTask });
+        await Task.WhenAll(new Task[] { moviesTask, membersTask });
             
         var movies = (await moviesTask).ValueOrThrow();
-        var ratings = await ratingsTask;
         var members = await membersTask;
         
-        var missingMovieRatings = movies.Where(m => !ratings.Any(r => r.MovieId == m.id));
-        var allRatings =
-            ratings
-                .Concat(
-                    missingMovieRatings.SelectMany(m =>
-                    {
-                        return members.Select(member => new UnratedMovieRating(
-                            IsCurrentUser: member.NameIdentifier == currentUserId,
-                            User: member,
-                            MovieId: m.id!));
-                    })
-                )
-                .ToImmutableList();
+        var allRatings = await _ratingsManager.GetAllRatings(HttpContext, movies, cancellationToken);
 
         var ratingsForMovies =
             allRatings
@@ -78,7 +64,7 @@ public class Index : PageModel
                 .OrderBy(m => m.DateAdded)
                 .ThenBy(m => m.Title)
                 .ToImmutableList();
-        UnwatchedMovies = await MovieListMoviePartialModel.MakeModelsForMovies(_ratingsManager, HttpContext, unwatchedMovies, cancellationToken);
+        UnwatchedMovies = MovieListMoviePartialModel.MakeModelsForMovies(unwatchedMovies, allRatings, cancellationToken);
         
         var watchedMovies = 
             movies
@@ -87,6 +73,6 @@ public class Index : PageModel
                 .ThenBy(m => m.DateAdded)
                 .ThenBy(m => m.Title)
                 .ToImmutableList();
-        WatchedMovies = await MovieListMoviePartialModel.MakeModelsForMovies(_ratingsManager, HttpContext, watchedMovies, cancellationToken);
+        WatchedMovies = MovieListMoviePartialModel.MakeModelsForMovies(watchedMovies, allRatings, cancellationToken);
     }
 }

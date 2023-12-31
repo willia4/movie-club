@@ -20,12 +20,12 @@ public record MovieListMoviePartialModel(MovieDocument Movie, IEnumerable<MovieR
         }
     }
     
-    public static async Task<ImmutableList<MovieListMoviePartialModel>> MakeModelsForMovies(IMovieRatingsManager ratingsManager, HttpContext httpContext, IEnumerable<MovieDocument> movies, CancellationToken cancellationToken)
+    public static ImmutableList<MovieListMoviePartialModel> MakeModelsForMovies(IEnumerable<MovieDocument> movies, IEnumerable<MovieRating> ratingsForMovies, CancellationToken cancellationToken)
     {
         var results = ImmutableList<MovieListMoviePartialModel>.Empty;
         foreach (var movie in movies)
         {
-            var ratings = await ratingsManager.GetRatingsForMovie(httpContext, movie, cancellationToken);
+            var ratings = ratingsForMovies.Where(r => r.MovieId == movie.id);
             results = results.Add(new MovieListMoviePartialModel(movie, ratings));
         }
 

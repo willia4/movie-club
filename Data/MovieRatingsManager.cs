@@ -7,7 +7,14 @@ namespace zinfandel_movie_club.Data;
 
 public interface IMovieRatingsManager
 {
-    public Task<ImmutableList<MovieRating>> GetAllRatings(HttpContext context, CancellationToken cancellationToken);
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="allMovies">Optional. If specified, ensure that unrated ratings exist for all movies cin this query in addition to all known ratings.</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public Task<ImmutableList<MovieRating>> GetAllRatings(HttpContext context, IEnumerable<MovieDocument>? allMovies, CancellationToken cancellationToken);
     public Task<ImmutableList<MovieRating>> GetRatingsForMovie(HttpContext context, MovieDocument movie, CancellationToken cancellationToken);
     public Task<ImmutableList<MovieRating>> GetRatingsForUser(HttpContext context, IGraphUser user, CancellationToken cancellationToken);
     public Task<MovieRating> UpdateRatingForMovie(HttpContext context, IGraphUser user, MovieDocument movie, decimal? newRating, CancellationToken cancellationToken);
@@ -18,6 +25,7 @@ public class MovieRatingsManager : IMovieRatingsManager
     private readonly IGraphUserManager _users;
     private readonly UserRatingIdGenerator _idGenerator;
     private readonly ICosmosDocumentManager<UserRatingDocument> _ratingsDocumentManager;
+    
     public MovieRatingsManager(IGraphUserManager users, ICosmosDocumentManager<UserRatingDocument> ratingsDocumentManager, UserRatingIdGenerator idGenerator)
     {
         _users = users;
@@ -53,7 +61,7 @@ public class MovieRatingsManager : IMovieRatingsManager
         return ((IEnumerable<MovieRating>) existingRatings).Concat(unratedUsers).OrderBy(r => r.UserName).ToImmutableList();
     }
     
-    public async Task<ImmutableList<MovieRating>> GetAllRatings(HttpContext context, CancellationToken cancellationToken)
+    public async Task<ImmutableList<MovieRating>> GetAllRatings(HttpContext context, IEnumerable<MovieDocument>? allMovies, CancellationToken cancellationToken)
     {
         var currentUserId = context.User?.NameIdentifier() ?? "";
         
@@ -66,7 +74,15 @@ public class MovieRatingsManager : IMovieRatingsManager
 
         var results = ImmutableList<MovieRating>.Empty;
 
-        var movieIds = allRatings.Select(r => r.MovieId).Distinct().ToImmutableList();
+        var allMovieIds = (allMovies ?? Enumerable.Empty<MovieDocument>()).Where(m => !string.IsNullOrWhiteSpace(m.id)).Select(m => m.id!);
+        
+        var movieIds = 
+            allRatings
+                .Select(r => r.MovieId)
+                .Concat(allMovieIds)
+                .Distinct()
+                .ToImmutableList();
+
         foreach (var movieId in movieIds)
         {
             var movieRatings = allRatings.Where(r => r.MovieId == movieId).ToImmutableList();

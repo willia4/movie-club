@@ -42,13 +42,9 @@ public class RawData : PageModel
     
     public async Task<IActionResult> OnGet(CancellationToken cancellationToken)
     {
-        var moviesTask = _movieManager.GetAllDocuments(cancellationToken);
-        var ratingsTask = _ratingsManager.GetAllRatings(HttpContext, cancellationToken);
-        await Task.WhenAll(new Task[] { moviesTask, ratingsTask });
-
-        var allMovies = (await moviesTask).ValueOrThrow();
-        var allRatings = (await ratingsTask);
-
+        var allMovies = (await _movieManager.GetAllDocuments(cancellationToken)).ValueOrThrow();
+        var allRatings = await _ratingsManager.GetAllRatings(HttpContext, allMovies, cancellationToken);
+        
         var watchedMovies = allMovies.Where(m => m.MostRecentWatchedDate.HasValue);
         var unwatchedMovies = allMovies.Where(m => !m.MostRecentWatchedDate.HasValue);
         

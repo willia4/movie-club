@@ -38,6 +38,8 @@ SELECT * FROM root r
             .ThenBy(m => m.id)
             .ToImmutableList();
 
+        var allRatings = await _ratingsManager.GetAllRatings(HttpContext, movies, cancellationToken);
+        
         if (movies.Count == 0)
         {
             return;
@@ -45,7 +47,7 @@ SELECT * FROM root r
         else if (movies.Count == 1)
         {
             //Choices = await GetRatingsForMovies(movies, cancellationToken);
-            Choices = await MovieListMoviePartialModel.MakeModelsForMovies(_ratingsManager, HttpContext, movies, cancellationToken);
+            Choices = MovieListMoviePartialModel.MakeModelsForMovies(movies, allRatings, cancellationToken);
             return;
         }
 
@@ -61,6 +63,6 @@ SELECT * FROM root r
             movies = movies.RemoveAt(nextIndex);
         }
 
-        Choices = await MovieListMoviePartialModel.MakeModelsForMovies(_ratingsManager, HttpContext, pickedMovies, cancellationToken);
+        Choices = MovieListMoviePartialModel.MakeModelsForMovies(pickedMovies, allRatings, cancellationToken);
     }
 }
