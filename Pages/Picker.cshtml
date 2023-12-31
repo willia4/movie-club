@@ -6,14 +6,6 @@
     ViewData["Title"] = "Movie Picker 9000";
 }
 
-@* @{ *@
-@*     async Task RenderMovie(MovieDocument movie) *@
-@*     { *@
-@*         <div class="movie"> *@
-@*             <div class="title">@movie.Title</div> *@
-@*         </div> *@
-@*     } *@
-@* } *@
 <div>
     @if (Model.Choices.Count >= 1)
     {
@@ -34,3 +26,12 @@
         <partial name="_MovieListMoviePartial" model="@Model.Choices[2]"/>
     }
 </div>
+
+<!--
+    Movie Count: @Model.MovieCount
+    First Id: @Model.FirstMovieId
+    First Title: @Model.FirstMovieTitle
+    Last Id: @Model.LastMovieId
+    Last Title: @Model.LastMovieTitle
+    Seed: @Model.MovieSeed
+-->

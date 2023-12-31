@@ -20,6 +20,13 @@ public class Picker : PageModel
     
     public ImmutableList<MovieListMoviePartialModel> Choices = ImmutableList<MovieListMoviePartialModel>.Empty;
     public string CurrentUserId;
+
+    public int MovieCount;
+    public string FirstMovieId = "";
+    public string LastMovieId = "";
+    public string FirstMovieTitle = "";
+    public string LastMovieTitle = "";
+    public int MovieSeed;
     
     public async Task OnGet(CancellationToken cancellationToken)
     {
@@ -39,6 +46,7 @@ SELECT * FROM root r
             .ToImmutableList();
 
         var allRatings = await _ratingsManager.GetAllRatings(HttpContext, movies, cancellationToken);
+        MovieCount = movies.Count;
         
         if (movies.Count == 0)
         {
@@ -46,13 +54,26 @@ SELECT * FROM root r
         }
         else if (movies.Count == 1)
         {
-            //Choices = await GetRatingsForMovies(movies, cancellationToken);
+            FirstMovieId = movies[0].id!;
+            FirstMovieTitle = movies[0].Title;
+            LastMovieId = movies[0].id!;
+            LastMovieTitle = movies[0].Title;
+            
             Choices = MovieListMoviePartialModel.MakeModelsForMovies(movies, allRatings, cancellationToken);
             return;
         }
 
-        var seed = HashCode.Combine(movies.Count, movies.First().id, movies.Last().id);
-        var random = new Random(seed);
+        FirstMovieId = movies[0].id!;
+        FirstMovieTitle = movies[0].Title;
+        LastMovieId = movies.Last().id!;
+        LastMovieTitle = movies.Last().Title;
+
+        MovieSeed = HashCodeUtil.Combine(
+            HashCodeUtil.StableHashCode(MovieCount),
+            HashCodeUtil.StableHashCode(FirstMovieId),
+            HashCodeUtil.StableHashCode(LastMovieId));
+        
+        var random = new Random(MovieSeed);
         
         var pickedMovies = new List<MovieDocument>();
         while (movies.Count > 0 && pickedMovies.Count < 3)
