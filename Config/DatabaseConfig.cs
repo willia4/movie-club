@@ -17,4 +17,5 @@ public class StorageAccountConfig
 {
     public string ConnectionString { get; init; } = "";
     public string ImagesContainer { get; init; } = "";
+    public string SettingsContainer { get; init; } = "";
 }

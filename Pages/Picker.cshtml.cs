@@ -11,11 +11,13 @@ public class Picker : PageModel
 {
     private readonly ICosmosDocumentManager<MovieDocument> _movieManager;
     private readonly IMovieRatingsManager _ratingsManager;
+    private readonly IShuffleHasher _shuffleHasher;
     
-    public Picker(ICosmosDocumentManager<MovieDocument> movieManager, IMovieRatingsManager ratingsManager)
+    public Picker(ICosmosDocumentManager<MovieDocument> movieManager, IMovieRatingsManager ratingsManager, IShuffleHasher shuffleHasher)
     {
         _movieManager = movieManager;
         _ratingsManager = ratingsManager;
+        _shuffleHasher = shuffleHasher;
     }
     
     public ImmutableList<MovieListMoviePartialModel> Choices = ImmutableList<MovieListMoviePartialModel>.Empty;
@@ -27,6 +29,9 @@ public class Picker : PageModel
     public string FirstMovieTitle = "";
     public string LastMovieTitle = "";
     public int MovieSeed;
+    
+    public int ShuffleValue;
+    public bool IsShuffled;
     
     public async Task OnGet(CancellationToken cancellationToken)
     {
@@ -68,10 +73,9 @@ SELECT * FROM root r
         LastMovieId = movies.Last().id!;
         LastMovieTitle = movies.Last().Title;
 
-        MovieSeed = HashCodeUtil.Combine(
-            HashCodeUtil.StableHashCode(MovieCount),
-            HashCodeUtil.StableHashCode(FirstMovieId),
-            HashCodeUtil.StableHashCode(LastMovieId));
+        ShuffleValue = await _shuffleHasher.GetCurrentShuffleValue(cancellationToken);
+        IsShuffled = ShuffleValue != 0;
+        MovieSeed = await _shuffleHasher.HashValues(cancellationToken, MovieCount, FirstMovieId, LastMovieId);
         
         var random = new Random(MovieSeed);
         

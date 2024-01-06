@@ -122,6 +122,7 @@ builder.Services.AddCosmosDocumentManager<MovieDocument>();
 builder.Services.AddCosmosDocumentManager<UserRatingDocument>();
 
 builder.Services.AddSingleton<IImageManager, ImageManager>();
+builder.Services.AddSingleton<IShuffleHasher, ShuffleHasher>();
 builder.Services.AddSingleton<Branding>();
 
 builder.Services.AddMemoryCache();

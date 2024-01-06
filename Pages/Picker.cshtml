@@ -6,6 +6,10 @@
     ViewData["Title"] = "Movie Picker 9000";
 }
 
+@section scripts {
+    <script type="text/javascript" src="~/js/picker.js"></script>
+}
+
 <div>
     @if (Model.Choices.Count >= 1)
     {
@@ -27,6 +31,18 @@
     }
 </div>
 
+<div id="shuffle-container" class="mt-5">
+    <div class="mb-3">
+        <button id="shuffle-button" type="button" class="btn btn-primary">Shuffle</button>
+    </div>
+    @if (Model.IsShuffled)
+    {
+        <div class="mb-3">
+            <button id="reset-shuffle-button" type="button" class="btn btn-secondary">Reset Shuffle (@Model.ShuffleValue shuffles)</button>
+        </div>
+    }
+</div>
+
 <!--
     Movie Count: @Model.MovieCount
     First Id: @Model.FirstMovieId
@@ -34,4 +50,5 @@
     Last Id: @Model.LastMovieId
     Last Title: @Model.LastMovieTitle
     Seed: @Model.MovieSeed
+    Shuffle: @Model.ShuffleValue
 -->
