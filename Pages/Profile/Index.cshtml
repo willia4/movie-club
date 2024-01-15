@@ -3,6 +3,7 @@
 
 @section scripts {
     <script type="text/javascript" src="~/js/profile.js"></script>
+    <script type="text/javascript" src="~/js/user-ratings.js"></script>
 }
 
 @section styles {
@@ -73,26 +74,64 @@
                 </form>
             }
             
-            @if (Model.RatingsForUser.Count > 0)
-            {
-                <div class="row ratings-row">
-                    <h2>Ratings</h2>
-                    <div class="d-inline-flex flex-wrap ratings">
-                        @foreach (var rating in Model.RatingsForUser)
-                        {
-                            <div class="user-rating d-flex">
-                                <img src="@rating.CoverHref" alt="cover image for @rating.Title"/>
-                                <div class="d-flex flex-column">
-                                    <div class="movie-title">
-                                        <a asp-page="/Movies/View/Index" asp-route-id="@rating.Slug">@rating.Title</a>
+            
+            <div class="ratings-content mt-2">
+                <ul class="nav nav-pills">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="tabs-rated-tab" data-bs-toggle="pill" data-bs-target="#tabs-rated" type="button" role="tab">Rated Movies</button>
+                    </li>
+                    @if (Model.CanEdit)
+                    {
+                        <li class="nav-item">
+                            <button class="nav-link" id="tabs-unrated-tab" data-bs-toggle="pill" data-bs-target="#tabs-unrated" type="button" role="tab">Unrated Movies</button>
+                        </li>                        
+                    }
+                </ul>
+                <div class="tab-content mt-3" id="tab-content">
+                    <div class="tab-pane show active" id="tabs-rated" role="tabpanel">
+                        <div class="ratings">
+                            @foreach (var rating in Model.RatingsForUser)
+                            {
+                                <div class="user-rating d-flex">
+                                    <img src="@rating.CoverHref" alt="cover image for @rating.Title"/>
+                                    <div class="d-flex flex-column">
+                                        <div class="movie-title">
+                                            <a asp-page="/Movies/View/Index" asp-route-id="@rating.Slug">@rating.Title</a>
+                                        </div>
+                                        <div class="rating">@rating.Rating.ToString("N2")</div>
                                     </div>
-                                    <div class="rating">@rating.Rating.ToString("N2")</div>
                                 </div>
-                            </div>
-                        }
+                            }
+                        </div>
                     </div>
+                    
+                    @if (Model.CanEdit)
+                    {
+                        <div class="tab-pane" id="tabs-unrated" role="tabpanel">
+                            <div class="ratings">
+                                @foreach (var movie in Model.UnratedMovies)
+                                {
+                                    <div class="user-rating unrated d-flex">
+                                        <img src="@movie.CoverHref" alt="cover image for @movie.Title"/>
+                                        <div class="d-flex flex-column">
+                                            <div class="movie-title">
+                                                <a asp-page="/Movies/View/Index" asp-route-id="@movie.Slug">@movie.Title</a>
+                                            </div>
+
+                                            <input id="update-rating-input-@(movie.MovieId)" type="number" placeholder="Rating" data-userid="@Model.UserId" data-movieid="@movie.MovieId" value=""/>
+                                            <div id="validation-@(movie.MovieId)" class="validation not-shown"></div>
+                                            <button id="update-rating-button-@movie.MovieId" type="button" class="btn btn-primary update-rating-button not-loading" data-userid="@Model.UserId" data-movieid="@movie.MovieId" data-elid="@movie.MovieId">
+                                                <span class="text">Update Rating</span>
+                                                <span class="spinner-border spinner-border-sm"></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
                 </div>
-            }
+            </div>
 
             @if (Model.IsAdmin)
             {

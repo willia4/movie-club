@@ -28,3 +28,44 @@
 .user-rating .movie-title {
     font-weight: bold;
 }
+
+.user-rating button {
+    margin-top: 5px;
+}
+
+button.not-loading .text {
+    display: inline;
+}
+
+button.not-loading .spinner-border {
+    display: none;
+}
+
+button.loading .text {
+    display: none;
+}
+
+button.loading .spinner-border {
+    display: inline-block;
+}
+
+.user-rating .validation {
+    color: #811b1b;
+    font-weight: bold;
+    font-style: italic;
+}
+
+.user-rating .validation.not-shown {
+    display: none;
+}
+
+.ratings {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+@media (max-width: 768px) {
+    .ratings {
+        grid-template-columns: 1fr;    
+    }
+}

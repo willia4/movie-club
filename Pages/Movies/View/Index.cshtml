@@ -134,9 +134,9 @@
                         </div>
                         @if (rating.IsCurrentUser || Model.UserIsAdmin)
                         {
-                            <input id="update-rating-input-@(rating.UserId)" type="number" placeholder="Rating" data-userid="@rating.UserId" data-movieid="@Model.Id" value="@(rating.IsRated ? rating.Rating!.Value : "")"/>
+                            <input id="update-rating-input-@(rating.UserId)" type="number" placeholder="Rating" data-userid="@rating.UserId" data-movieid="@Model.Id" value="@(rating.IsRated ? rating.Rating!.Value.ToString("N2") : "")"/>
                             <div id="validation-@(rating.UserId)" class="validation not-shown"></div>
-                            <button id="update-rating-button-@rating.UserId)" type="button" class="btn btn-primary update-rating-button not-loading" data-userid="@rating.UserId" data-movieid="@Model.Id">
+                            <button id="update-rating-button-@rating.UserId)" type="button" class="btn btn-primary update-rating-button not-loading" data-userid="@rating.UserId" data-movieid="@Model.Id" data-elid="@rating.UserId">
                                 <span class="text">Update Rating</span>
                                 <span class="spinner-border spinner-border-sm"></span>
                             </button>

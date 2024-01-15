@@ -28,8 +28,6 @@ public abstract record Result<T, E>
 
     public abstract E UnwrapError();
     
-    public T? UnwrapOrDefault() => IsSuccess ? Unwrap() : default;
-
     public T ValueOrThrow() => Match(x => x);
 
     public abstract Task<Result<U, E>> MapAsync<U>(Func<T, Task<U>> f);
@@ -39,6 +37,9 @@ public abstract record Result<T, E>
 
     public abstract Result<U, E> ChangeResultTypeIfError<U>();
     public abstract Result<T, U> ChangeErrorTypeIfSuccess<U>();
+    
+    public T ValueOrDefault(T def) => Match(v => v, _ => def);
+    public E ErrorOrDefault(E def) => Match(_ => def, e => e);
 }
 
 

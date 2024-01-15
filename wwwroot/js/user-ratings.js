@@ -11,12 +11,13 @@
      * @param {HTMLButtonElement} button
      */
     function configureButton(button) {
+        const elementId = button.dataset.elid;
         const userId = button.dataset.userid;
         const movieId = button.dataset.movieid;
         /** @type {HTMLDivElement} */
-        const validation = document.getElementById("validation-" + userId);
+        const validation = document.getElementById("validation-" + elementId);
         /** @type {HTMLInputElement} */
-        const input = document.getElementById("update-rating-input-" + userId);
+        const input = document.getElementById("update-rating-input-" + elementId);
         
         const showValidation = (msg) => {
             validation.innerText = msg;

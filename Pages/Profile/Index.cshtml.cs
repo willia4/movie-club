@@ -27,7 +27,8 @@ public class Index : PageModel
     public string AADUserName = "";
     
     public ImmutableList<ProfilePageMovieRating> RatingsForUser = ImmutableList<ProfilePageMovieRating>.Empty;
-
+    public ImmutableList<ProfilePageUnratedMovie> UnratedMovies = ImmutableList<ProfilePageUnratedMovie>.Empty;
+        
     public Index(IGraphUserManager graphUserManager, IImageUrlProvider<IGraphUser> profileImageProvider, IImageUrlProvider<MovieDocument> movieCoverImageProvider, IImageManager imageManager, IMovieRatingsManager ratingsManager, ICosmosDocumentManager<MovieDocument> _movieManager)
     {
         _graphUserManager = graphUserManager;
@@ -69,11 +70,24 @@ public class Index : PageModel
             throw new NotFoundException();
         }
 
-        var ratingsForUser = await _ratingsManager.GetRatingsForUser(HttpContext, user, cancellationToken);
-        var moviesForRatings = 
-            (await _movieManager.GetDocumentsByIds(ratingsForUser.Select(r => r.MovieId).Distinct(), cancellationToken))
-            .ValueOrThrow()
-            .ToImmutableDictionary(m => m.id!, m => m);
+        var allMoviesTask = _movieManager.GetAllDocuments(cancellationToken);
+        var ratingsForUserTask = _ratingsManager.GetRatingsForUser(HttpContext, user, cancellationToken);
+        await Task.WhenAll(allMoviesTask, ratingsForUserTask);
+        
+        var allMovies = (await allMoviesTask).ValueOrDefault(ImmutableList<MovieDocument>.Empty);
+        var ratingsForUser = await ratingsForUserTask;
+        
+        var movieIdsForRatings = ratingsForUser.Select(r => r.MovieId).Distinct().ToImmutableHashSet();
+        var moviesForRatings =
+            allMovies
+                .Where(m => movieIdsForRatings.Contains(m.id!))
+                .ToImmutableDictionary(m => m.id!, m => m);
+
+        var unratedMovies =
+            allMovies
+                .Where(m => m.MostRecentWatchedDate.HasValue)
+                .Where(m => !movieIdsForRatings.Contains(m.id!))
+                .ToImmutableList();
         
         RatingsForUser = ImmutableList<ProfilePageMovieRating>.Empty;
 
@@ -93,6 +107,20 @@ public class Index : PageModel
                     return acc;
                 })
                 .OrderByDescending(r => r.Rating)
+                .ToImmutableList();
+
+        UnratedMovies =
+            unratedMovies
+                .Aggregate(ImmutableList<ProfilePageUnratedMovie>.Empty, (acc, m) =>
+                {
+                    return acc.Add(new ProfilePageUnratedMovie(
+                        MovieId: m.id!,
+                        Slug: m.SlugId(),
+                        Title: m.Title,
+                        WatchDate: m.MostRecentWatchedDate!.Value,
+                        CoverHref: _movieCoverImageProvider.ImageUri(m).ToString()));
+                })
+                .OrderByDescending(m => m.WatchDate)
                 .ToImmutableList();
         
         MemberRole = user.UserRole;
@@ -173,3 +201,4 @@ public class Index : PageModel
 }
 
 public record ProfilePageMovieRating(string Slug, string Title, string CoverHref, decimal Rating);
+public record ProfilePageUnratedMovie(string MovieId, string Slug, string Title, string CoverHref, DateOnly WatchDate);
