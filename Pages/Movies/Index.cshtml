@@ -15,63 +15,6 @@
     </style>
 }
 
-@{
-    string TranslateDecimal(decimal? d) => d.HasValue ? d.Value.ToString("N2") : "??";
-}
-
-@{
-    async Task RenderMovie(bool watched, MovieDocument movie)
-    {
-        var className = watched ? "movie-unwatched" : "movie-watched";
-        
-        <div class="movie-row @className row mb-2">
-            <div class="col-2 movie-cover">
-                <img class="img-fluid" src="@coverProvider.ImageUri(movie, ImageSize.Size128)" alt="cover for @movie.Title"/>
-            </div>
-            <div class="col movie-details">
-                <div class="movie-title"><a asp-page="/Movies/View/Index" asp-route-id="@movie.SlugId()">@movie.Title.Or(movie.id)</a>
-                    @if (!string.IsNullOrWhiteSpace(movie.ReleaseDate))
-                    {
-                        <span class="release-date">(@movie.ReleaseDate)</span>
-                    }
-                </div>
-                <div class="movie-ratings">
-                    <div>
-                        <span class="my-rating-container">
-                            <span class="detail-heading my-rating">Me:</span>
-                            <span class="detail-value my-rating">@Model.MyRatingsForMovies[movie.id!]</span>
-                        </span>
-                        <span class="our-rating-container">
-                            <span class="detail-heading our-rating">Us:</span>
-                            <span class="detail-value our-rating">@Model.OurRatingForMovies[movie.id!]</span>
-                        </span>
-                        @if (movie.RottenTomatoesCriticScore.HasValue || movie.RottenTomatoesUserScore.HasValue)
-                        {
-                            <span class="detail-heading">RT Critics:</span>
-                            <span class="detail-value">@TranslateDecimal(movie.RottenTomatoesCriticScore)</span>
-                            <span class="detail-heading">RT Users:</span>
-                            <span class="detail-value">@TranslateDecimal(movie.RottenTomatoesUserScore)</span>
-                        }
-                    </div>
-                    @if (movie.RuntimeMinutes.HasValue)
-                    {
-                        <div>
-                            <span class="detail-heading">Runtime:</span>
-                            <span class="detail-value">@movie.RuntimeMinutes minutes</span>
-                        </div>
-                    }
-                    @if (watched && movie.MostRecentWatchedDate.HasValue)
-                    {
-                        <div>
-                            <span class="detail-heading">Watched: </span>
-                            <span class="detail-value">@movie.MostRecentWatchedDate.Value.ToString("o")</span>
-                        </div>
-                    }
-                </div>
-            </div>
-        </div>
-    }
-}
 <div class="raw-data-link mb-3">
     <a asp-page="/Movies/RawData">Just the data</a>
 </div>

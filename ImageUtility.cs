@@ -36,7 +36,7 @@ public static class ImageUtility
             await bytes.CopyToAsync(ms, cancellationToken);
             return await LoadImageFromBytes(ms.ToArray().ToImmutableArray(), cancellationToken);
         }
-        catch (TaskCanceledException c)
+        catch (TaskCanceledException)
         {
             throw;
         }

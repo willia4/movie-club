@@ -21,7 +21,7 @@ public class Picker : PageModel
     }
     
     public ImmutableList<MovieListMoviePartialModel> Choices = ImmutableList<MovieListMoviePartialModel>.Empty;
-    public string CurrentUserId;
+    public string CurrentUserId = "";
 
     public int MovieCount;
     public string FirstMovieId = "";

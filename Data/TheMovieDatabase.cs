@@ -257,7 +257,7 @@ public class TheMovieDatabase : IMovieDatabase
     private class TmdbWatchProvidersResponse
     {
         [JsonPropertyName("id")] public int Id { get; set; }
-        [JsonPropertyName("results")] public TmdbWatchProvidersResponseResults Results { get; set; } 
+        [JsonPropertyName("results")] public TmdbWatchProvidersResponseResults Results { get; set; } = new();
     }
 
     private class TmdbWatchProvidersResponseResults
@@ -267,15 +267,16 @@ public class TheMovieDatabase : IMovieDatabase
 
     private class TmdbWatchProviderRegion
     {
-        [JsonPropertyName("link")] public string Link { get; set; }
+        [JsonPropertyName("link")] public string Link { get; set; } = "";
+        // ReSharper disable once CollectionNeverUpdated.Local
         [JsonPropertyName("flatrate")] public List<TmdbWatchProvider> StreamingProviders { get; set; } = new();
     }
 
     private class TmdbWatchProvider
     {
         [JsonPropertyName("provider_id")] public int Id { get; set; }
-        [JsonPropertyName("logo_path")] public string LogoPath { get; set; }
+        [JsonPropertyName("logo_path")] public string LogoPath { get; set; } = "";
         [JsonPropertyName("display_priority")] public int DisplayPriority { get; set; }
-        [JsonPropertyName("provider_name")] public string Name { get; set; }
+        [JsonPropertyName("provider_name")] public string Name { get; set; } = "";
     }
 }
