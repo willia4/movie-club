@@ -17,6 +17,7 @@ public class Add : PageModel
     private readonly IImageManager _imageManager;
     private readonly MovieIdGenerator _movieId;
     private readonly ICosmosDocumentManager<MovieDocument> _dataManager;
+
     public Add(IUriDownloader imageDownloader, IImageManager imageManager, MovieIdGenerator movieId, ICosmosDocumentManager<MovieDocument> dataManager)
     {
         _imageDownloader = imageDownloader;
@@ -31,10 +32,9 @@ public class Add : PageModel
     [BindProperty(Name="rt-user")] [Range(0.0, 10.0)] public decimal? RottenTomatoesUserScore { get; set; }
     [BindProperty(Name = "runtime")] public int? RuntimeMinutes { get; set; }
     [BindProperty(Name = "release-date")] public string ReleaseDate { get; set; } = "";
-    
     [BindProperty(Name="tmdb-id")] public string TmdbId { get; set; } = "";
     [BindProperty(Name="tmdb-poster")] public string TmdbPoster { get; set; } = "";
-    
+
     public void OnGet()
     {
         
@@ -65,7 +65,6 @@ public class Add : PageModel
                 })
                 .AsExceptionErrorType()
                 .BindAsync(x => ImageUtility.LoadImageFromBytes(x.Data, cancellationToken));
-                
             return
                 downloadResult
                     .Match(x => (originalUri: uri,  image: x.First()));
@@ -73,6 +72,9 @@ public class Add : PageModel
 
         return (null, null);
     }
+
+    private static string ToAscii(string s) => System.Text.Encoding.ASCII.GetString(System.Text.Encoding.ASCII.GetBytes(s));
+
     public async Task<IActionResult> OnPost(CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(Title))
@@ -91,18 +93,18 @@ public class Add : PageModel
         {
             var newMetadata = new Dictionary<string, string>
             {
-                { "movieId", newId },
-                { "movieTitle", Title }
+                { "movieId", ToAscii(newId) },
+                { "movieTitle", ToAscii(Title)}
             };
             
             if (!string.IsNullOrWhiteSpace(TmdbId))
             {
-                newMetadata["tmdb"] = TmdbId;
+                newMetadata["tmdb"] = ToAscii(TmdbId);
             }
             
             if (coverImageUri != null)
             {
-                newMetadata["originalUri"] = coverImageUri.ToString();
+                newMetadata["originalUri"] = ToAscii(coverImageUri.ToString());
             }
 
             coverImagePrefix = $"movies/{newId}/cover";
