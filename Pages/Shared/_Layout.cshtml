@@ -102,8 +102,10 @@ else
     <div class="container">
         <main role="main" class="pb-3">
             <div id="main-content-row" class="row">
-                <div class="col"></div>
-                <div class="col-sm-8">
+                <div class="col">
+                    @await RenderSectionAsync("LeftColumn", required: false)
+                </div>
+                <div class="col-md-8">
                     @RenderBody()
                 </div>
                 <div class="col"></div>

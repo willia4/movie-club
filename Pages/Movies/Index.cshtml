@@ -15,6 +15,19 @@
     </style>
 }
 
+@section scripts {
+    <script src="~/js/movies-sort.js"></script>
+}
+
+@section leftColumn {
+    <div class="responsive-sidebar">
+        <div><button class="nav-pills nav-link active" type="button" data-sort-mode="oldest-first">Sort - Oldest First</button></div>
+        <div><button class="nav-pills nav-link" type="button" data-sort-mode="newest-first">Sort - Newest First</button></div>
+        <div><button class="nav-pills nav-link" type="button" data-sort-mode="alpha-asc">Sort - Title</button></div>
+        <div><button class="nav-pills nav-link" type="button" data-sort-mode="alpha-des">Sort - Title (Reverse)</button></div>
+    </div>
+}
+
 <div class="raw-data-link mb-3">
     <a asp-page="/Movies/RawData">Just the data</a>
 </div>

@@ -7,7 +7,7 @@
     var className = Model.Watched ? "movie-partial movie-watched" : "movie-partial movie-unwatched";
     string TranslateDecimal(decimal? d) => d.HasValue ? d.Value.ToString("N2") : "??";
 }
-<div class="@className row mb-2">
+<div class="@className row mb-2" data-date-added="@Model.DateAdded.ToString("O")" data-title="@Model.Title">
     <div class="col-2 movie-cover">
         <img class="img-fluid" src="@coverProvider.ImageUri(Model.Movie, ImageSize.Size128)" alt="cover for @Model.Title"/>
     </div>

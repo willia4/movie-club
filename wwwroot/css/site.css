@@ -78,3 +78,40 @@ nav .profile-picture-nav .dropdown-toggle::after {
   padding-right: 3px;
   margin-right: 3px;
 }
+
+.responsive-sidebar {
+  display: flex;
+  flex-direction: row;
+}
+
+.responsive-sidebar > * {
+  margin-bottom: 5px;
+}
+
+.responsive-sidebar .nav-link {
+  min-height: 35px;
+  padding: .05rem 1rem;
+  border-radius: var(--bs-border-radius);
+  border-width: 2px;
+  border-style: solid;
+  color: var(--bs-nav-pills-link-active-bg);
+  border-color: var(--bs-nav-pills-link-active-bg);
+  background-color: var(--white-background-color);
+}
+
+.responsive-sidebar .active {
+  color: var(--bs-nav-pills-link-active-color);
+  background-color: var(--bs-nav-pills-link-active-bg);
+  border-color: var(--bs-nav-pills-link-active-color);
+}
+
+@media (min-width: 768px) {
+  .responsive-sidebar {
+    flex-direction: column;
+  }
+ 
+  .responsive-sidebar .nav-link {
+    width: 100%;
+    min-height: unset;
+  }
+}

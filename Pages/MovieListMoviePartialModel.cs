@@ -8,7 +8,8 @@ public record MovieListMoviePartialModel(MovieDocument Movie, IEnumerable<MovieR
 {
     public string Title => Movie.Title;
     public bool Watched => Movie.MostRecentWatchedDate.HasValue;
-    
+    public DateTimeOffset DateAdded => Movie.DateAdded ?? DateTimeOffset.MinValue;
+
     public string CurrentUserRating
     {
         get
@@ -22,13 +23,25 @@ public record MovieListMoviePartialModel(MovieDocument Movie, IEnumerable<MovieR
     
     public static ImmutableList<MovieListMoviePartialModel> MakeModelsForMovies(IEnumerable<MovieDocument> movies, IEnumerable<MovieRating> ratingsForMovies, CancellationToken cancellationToken)
     {
-        var results = ImmutableList<MovieListMoviePartialModel>.Empty;
-        foreach (var movie in movies)
+        var ratingsTable = ratingsForMovies
+            .GroupBy(r => r.MovieId)
+            .ToImmutableDictionary(x => x.Key, x => x.ToImmutableList());
+
+        ImmutableList<MovieRating> GetRatingForMovie(MovieDocument? movie)
         {
-            var ratings = ratingsForMovies.Where(r => r.MovieId == movie.id);
-            results = results.Add(new MovieListMoviePartialModel(movie, ratings));
+            if (movie?.id is {} movieId && ratingsTable.TryGetValue(movieId, out var value))
+            {
+                return value;
+            }
+            return ImmutableList<MovieRating>.Empty;
         }
 
-        return results;
+        MovieListMoviePartialModel MakeModel(MovieDocument movie) =>
+            new MovieListMoviePartialModel(movie, GetRatingForMovie(movie));
+        
+        return
+            movies
+                .Select(MakeModel)
+                .ToImmutableList();
     }
 }
