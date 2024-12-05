@@ -18,6 +18,7 @@ public interface IMovieRatingsManager
     public Task<ImmutableList<MovieRating>> GetRatingsForMovie(HttpContext context, MovieDocument movie, CancellationToken cancellationToken);
     public Task<ImmutableList<MovieRating>> GetRatingsForUser(HttpContext context, IGraphUser user, CancellationToken cancellationToken);
     public Task<MovieRating> UpdateRatingForMovie(HttpContext context, IGraphUser user, MovieDocument movie, decimal? newRating, CancellationToken cancellationToken);
+    public Task DeleteRatingsForMovie(MovieDocument movie, CancellationToken cancellationToken);
 }
 
 public class MovieRatingsManager : IMovieRatingsManager
@@ -171,7 +172,32 @@ public class MovieRatingsManager : IMovieRatingsManager
             MovieId: movie.id ?? "",
             MovieRating: updateRes.Rating);
     }
-    
+
+    public async Task DeleteRatingsForMovie(MovieDocument movie, CancellationToken cancellationToken)
+    {
+        var movieId = movie.id ?? throw new ArgumentException($"MovieDocument with null id passed to {nameof(DeleteRatingsForMovie)}");
+        var movieRatings = 
+            (await _ratingsDocumentManager
+                    .QueryDocuments(q => 
+                        q.Where(d => d.MovieId == movieId), cancellationToken))
+            .ValueOrThrow();
+
+        const int taskCount = 4;
+        var taskBuckets = movieRatings.ToBuckets(taskCount);
+        var tasks = taskBuckets.Select(async bucket =>
+        {
+            if (bucket.IsEmpty)
+                return;
+
+            foreach (var doc in bucket)
+            {
+                if (!string.IsNullOrWhiteSpace(doc.id))
+                    await _ratingsDocumentManager.DeleteDocument(doc.id, cancellationToken);
+            }
+        }).ToImmutableList();
+
+        await Task.WhenAll(tasks);
+    }
 }
 
 

@@ -95,3 +95,7 @@ button.loading .spinner-border {
 #our-rating {
     color: var(--bright-background-color);
 }
+
+.admin-button-container button {
+    margin-top: 15px;
+}

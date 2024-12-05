@@ -7,15 +7,18 @@ using zinfandel_movie_club.Exceptions;
 
 namespace zinfandel_movie_club.Controllers;
 
+/// <summary>
+/// API routes for interacting with The Movie Database service for specific movies
+/// </summary>
 [Controller]
 [Route("/api/v1/movie")]
 [Authorize(Policy = "Member")]
 [EnableRateLimiting(policyName: "api")]
-public class MovieDetailApiController : Controller
+public class MovieDBApiController : Controller
 {
     private readonly IMovieDatabase _movieDb;
     
-    public MovieDetailApiController(IMovieDatabase movieDb)
+    public MovieDBApiController(IMovieDatabase movieDb)
     {
         _movieDb = movieDb;
     }

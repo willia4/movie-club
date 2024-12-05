@@ -37,7 +37,7 @@
                 
                 const deleteRes = await fetch(`/api/v1/movies/${movieId}/watch-dates`, { method: 'DELETE'});
                 if (!deleteRes.ok) {
-                    alert ("Error");
+                    alert ("Error; see console");
                     console.log(deleteRes);
                 }
                 else {

@@ -10,6 +10,7 @@
 @section scripts {
     <script type="text/javascript" src="~/js/user-ratings.js"></script>
     <script type="text/javascript" src="~/js/watch-date.js"></script>
+    <script type="text/javascript" src="~/js/delete-movie.js"></script>
 }
 
 @section styles {
@@ -47,8 +48,11 @@
             </div>
             @if (Model.UserIsAdmin)
             {
-                <div class="clear-watch-button-container col-12">
+                <div class="admin-button-container clear-watch-button-container col-12">
                     <button type="button" id="clear-watch-dates" class="btn btn-danger" data-movieid="@Model.Id">Clear Watch Dates</button>
+                </div>
+                <div class="admin-button-container delete-movie-button-container col-12">
+                    <button type="button" id="delete-movie" class="btn btn-danger" data-movieid="@Model.Id">Delete Movie</button>
                 </div>
             }
         </dl>

@@ -28,7 +28,12 @@ public abstract record Result<T, E>
 
     public abstract E UnwrapError();
     
-    public T ValueOrThrow() => Match(x => x);
+    public virtual T ValueOrThrow() => Match(x => x);
+
+    public virtual T ValueOrThrow(Func<Exception> exceptionFactory) =>
+        Match(
+            x => x,
+            _ => throw exceptionFactory());
 
     public abstract Task<Result<U, E>> MapAsync<U>(Func<T, Task<U>> f);
     public abstract Task<Result<U, E>> BindAsync<U>(Func<T, Task<Result<U, E>>> f);
