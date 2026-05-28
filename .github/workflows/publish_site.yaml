@@ -50,6 +50,7 @@ jobs:
 
           CMD=""
           CMD+="docker run --pull always -d --name movieclub --restart=always "
+          CMD+="-e 'ASPNETCORE_HTTP_PORTS=80' "
           CMD+="-e 'AZUREADB2C__SIGNEDOUTCALLBACKPATH=${{ vars.AB2C_SIGNEDOUTCALLBACKPATH }}' "
           CMD+="-e 'AZUREADB2C__SIGNUPSIGNINPOLICYID=${{ vars.AB2C_SIGNUPSIGNINPOLICYID }}' "
           CMD+="-e 'AZUREADB2C__RESETPASSWORDPOLICYID=${{ vars.AB2C_RESETPASSWORDPOLICYID }}' "
