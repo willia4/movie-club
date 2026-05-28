@@ -1,4 +1,4 @@
-﻿FROM node:21-bookworm-slim as node
+﻿FROM node:21-bookworm-slim AS node
 
 RUN npm install --global gulp-cli
 
@@ -8,7 +8,7 @@ COPY ./ .
 RUN npm install
 RUN gulp
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0-bookworm-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS build
 
 WORKDIR /source
 COPY ./ .
@@ -16,7 +16,7 @@ COPY ./ .
 RUN dotnet restore
 RUN dotnet publish -c release -o /app --no-restore
 
-FROM mcr.microsoft.com/dotnet/aspnet:7.0-bookworm-slim
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra
 WORKDIR /app
 COPY --from=build /app ./
 COPY --from=node /source/wwwroot/lib/bootstrap/ ./wwwroot/lib/bootstrap/
