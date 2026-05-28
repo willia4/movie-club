@@ -1,7 +1,5 @@
 ﻿using System.Collections.Immutable;
 using System.Net;
-using Tavis.UriTemplates;
-using zinfandel_movie_club.Exceptions;
 
 namespace zinfandel_movie_club;
 

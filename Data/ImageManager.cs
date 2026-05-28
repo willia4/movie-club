@@ -2,9 +2,6 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Options;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using Tavis.UriTemplates;
 using zinfandel_movie_club.Config;
 
 namespace zinfandel_movie_club.Data;

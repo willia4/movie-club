@@ -3,8 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using NanoidDotNet;
-using Tavis.UriTemplates;
 using zinfandel_movie_club.Data;
 using zinfandel_movie_club.Data.Models;
 using zinfandel_movie_club.Exceptions;

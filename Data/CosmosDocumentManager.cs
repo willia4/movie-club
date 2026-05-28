@@ -46,7 +46,12 @@ public class CosmosDocumentManager<DocumentT> : ICosmosDocumentManager<DocumentT
         _documentType = documentType;
         _partitionKeyMaker = partitionKeyMaker;
 
-        _client = new CosmosClient(connectionString: _connectionString, clientOptions: new CosmosClientOptions() { Serializer = new CosmosSystemTextJsonSerializer() });
+        _client = new CosmosClient(connectionString: _connectionString, clientOptions: new CosmosClientOptions()
+        {
+            Serializer = new CosmosSystemTextJsonSerializer(),
+            RequestTimeout = TimeSpan.FromSeconds(10),
+            OpenTcpConnectionTimeout = TimeSpan.FromSeconds(10)
+        });
     }
 
     private Database? _cachedDatabase = null;

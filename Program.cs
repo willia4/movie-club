@@ -204,7 +204,7 @@ var csp = new Lazy<string>(() =>
 
 app.Use(async (ctx, next) =>
 {
-    ctx.Response.Headers.Add("Content-Security-Policy", csp.Value);
+    ctx.Response.Headers.Append("Content-Security-Policy", csp.Value);
     await next(ctx);
 });
 app.UseMiddleware<ClaimRoleDecoratorMiddleware>();
