@@ -171,10 +171,15 @@ app.MapGet("microsoftidentity/account/signedout", (httpContext) =>
     return Task.CompletedTask;
 });
 
-app.UseForwardedHeaders(new ForwardedHeadersOptions()
+var forwardedHeadersOptions = new ForwardedHeadersOptions
 {
-    ForwardedHeaders = ForwardedHeaders.XForwardedProto
-});
+    ForwardedHeaders = ForwardedHeaders.XForwardedProto,
+};
+// Trust any proxy — safe because this host is not directly internet-accessible;
+// TLS termination always happens at the reverse proxy layer.
+forwardedHeadersOptions.KnownIPNetworks.Clear();
+forwardedHeadersOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeadersOptions);
 
 app.UseCookiePolicy(new CookiePolicyOptions()
 {
